@@ -1,1 +1,10 @@
 TwGraphAPI	 T_IV
+TwBar*           T_CV
+
+INPUT
+T_CV
+        $var = ($type)($arg);
+
+OUTPUT
+T_CV
+        $var = $arg;

@@ -1,9 +1,8 @@
 package AntTweakBar;
 
-use 5.020000;
-use strict;
-use warnings;
+use 5.12.0;
 
+use Carp;
 use Alien::AntTweakBar;
 
 require Exporter;
@@ -35,6 +34,19 @@ our $VERSION = '0.01';
 require XSLoader;
 XSLoader::load('AntTweakBar', $VERSION);
 
+sub new {
+    my ($class, $name) = @_;
+    croak "AntTweakBar name should be specified"
+        unless defined $name;
+    my $self = {};
+    $self->{_bar_ptr} = _create($name);
+    return bless $self => $class;
+}
+
+sub DESTROY {
+    my $self = shift;
+    _destroy($self->{_bar_ptr});
+}
 
 # Preloaded methods go here.
 

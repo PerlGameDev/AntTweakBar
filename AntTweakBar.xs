@@ -19,8 +19,19 @@ int window_size(width, height) {
   return TwWindowSize(width, height);
 }
 
+TwBar* _create(const char *name) {
+  return TwNewBar(name);
+}
 
-MODULE = AntTweakBar		PACKAGE = AntTweakBar		
+int _destroy(TwBar* bar) {
+  return TwDeleteBar(bar);
+}
+
+int draw() {
+  return TwDraw();
+}
+
+MODULE = AntTweakBar		PACKAGE = AntTweakBar
 
 BOOT:
 {
@@ -38,12 +49,25 @@ init(graphic_api)
   TwGraphAPI graphic_api
   PROTOTYPE: $
 
-int 
+int
 terminate()
 
 
-int 
+TwBar*
+_create(name)
+  const char *name
+  PROTOTYPE: $
+
+int
+_destroy(bar)
+  TwBar* bar
+  PROTOTYPE: $
+
+int
 window_size(width, height)
   int width
   int height
      PROTOTYPE: $$
+
+int
+draw()
