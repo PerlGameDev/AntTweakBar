@@ -39,13 +39,38 @@ sub new {
     croak "AntTweakBar name should be specified"
         unless defined $name;
     my $self = {};
-    $self->{_bar_ptr} = _create($name);
+    $self->{_bar_ptr} = _create( $name );
     return bless $self => $class;
 }
 
 sub DESTROY {
     my $self = shift;
     _destroy($self->{_bar_ptr});
+}
+
+sub add_button {
+    my ($self, %args) = @_;
+
+    my $name        = $args{name      };
+    my $cb          = $args{cb        };
+    my $definition  = $args{definition} // "";
+
+    croak "Button name should be specified"
+        unless defined $name;
+    croak "Button callback should be specified"
+        if(!defined($cb) || ref($cb) ne 'CODE');
+
+    _add_button($self->{_bar_ptr}, $name, $cb, $definition);
+}
+
+sub add_separator {
+    my ($self, $name, $definition) = @_;
+    croak "Separator name should be specified"
+        unless defined $name;
+
+    $definition //= "";
+
+    _add_separator($self->{_bar_ptr}, $name, $definition);
 }
 
 # Preloaded methods go here.

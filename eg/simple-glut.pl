@@ -27,10 +27,10 @@ sub reshape {
     gluLookAt(0,0,5, 0,0,0, 0,1,0);
     glTranslatef(0, 0.6, -1);
 
+    say "window size: ${width} x ${height}";
     AntTweakBar::window_size($width, $height);
 }
 
-my $bar;
 
 glutInit;
 glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -41,6 +41,23 @@ glutDisplayFunc(\&display);
 glutReshapeFunc(\&reshape);
 AntTweakBar::init(TW_OPENGL);
 
-$bar = AntTweakBar->new("TweakBar & Perl");
+reshape(640, 480);
+my $bar = AntTweakBar->new("TweakBar & Perl");
+$bar->add_separator("x-sep");
+
+# $bar->add_var(
+#     mode => 'ro', # rw
+#     name => "my-var-name",
+#     type => # bool, integer, number, string, color3f, color4f, direction,
+#     value => \$value,
+#     definition => "mybar/WindVel  label='Wind velocity'",
+# );
+
+$bar->add_button(
+    name       => "my-btn-name",
+    cb         => sub { say "hello" },
+    definition => "label='Wind velocity'",
+);
+
 
 glutMainLoop;
