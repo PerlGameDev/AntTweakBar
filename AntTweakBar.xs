@@ -58,6 +58,49 @@ void _add_separator(TwBar* bar, const char *name, const char *definition) {
   TwAddSeparator(bar, name, definition);
 }
 
+int eventMouseButtonGLUT(int button, int state, int x, int y){
+  return TwEventMouseButtonGLUT(button, state, x, y);
+}
+
+int eventMouseMotionGLUT(int mouseX, int mouseY){
+  return TwEventMouseMotionGLUT(mouseX, mouseY);
+}
+
+int eventKeyboardGLUT(unsigned char key, int mouseX, int mouseY) {
+  return TwEventKeyboardGLUT(key, mouseX, mouseY);
+}
+
+int eventSpecialGLUT(int key, int mouseX, int mouseY) {
+  return TwEventSpecialGLUT(key, mouseX, mouseY);
+}
+
+static SV* _modifiers_callback = NULL;
+
+int _modifiers_callback_bridge(){
+  if(!_modifiers_callback){
+    croak("internal error: no _modifiers_callback\n");
+    return -1;
+  }
+  dSP;
+  PUSHMARK(SP);
+  call_sv(_modifiers_callback, G_NOARGS|G_DISCARD|G_VOID);
+}
+
+void GLUTModifiersFunc(SV* callback){
+  SvGETMAGIC(callback);
+  if(!SvROK(callback)
+     || (SvTYPE(SvRV(callback)) != SVt_PVCV))
+  {
+    croak("Callback for GLUTModifiersFunc should be a closure...\n");
+  }
+  if(_modifiers_callback) {
+     SvREFCNT_dec(_modifiers_callback);
+  }
+  _modifiers_callback = newSVsv(callback);
+  TwGLUTModifiersFunc(_modifiers_callback_bridge);
+}
+
+
 MODULE = AntTweakBar		PACKAGE = AntTweakBar
 
 BOOT:
@@ -113,3 +156,36 @@ _add_separator(bar, name, definition)
 
 int
 draw()
+
+int
+eventMouseButtonGLUT(button, state, x, y)
+  int button
+  int state
+  int x
+  int y
+  PROTOTYPE: $$$$
+
+int
+eventMouseMotionGLUT(mouseX, mouseY)
+  int mouseX
+  int mouseY
+  PROTOTYPE: $$
+
+int
+eventKeyboardGLUT(key, mouseX, mouseY)
+  unsigned char key
+  int mouseX
+  int mouseY
+  PROTOTYPE: $$$
+
+int
+eventSpecialGLUT(key, mouseX, mouseY)
+  int key
+  int mouseX
+  int mouseY
+  PROTOTYPE: $$$
+
+void
+GLUTModifiersFunc(callback)
+  SV* callback
+  PROTOTYPE: $

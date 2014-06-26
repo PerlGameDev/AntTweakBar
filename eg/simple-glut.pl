@@ -37,9 +37,16 @@ glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 glutInitWindowSize(640, 480);
 glutCreateWindow("[perl] AntTweakBar simple example using GLUT");
 
+AntTweakBar::init(TW_OPENGL);
+
 glutDisplayFunc(\&display);
 glutReshapeFunc(\&reshape);
-AntTweakBar::init(TW_OPENGL);
+glutMouseFunc(\&AntTweakBar::eventMouseButtonGLUT);
+glutMotionFunc(\&AntTweakBar::eventMouseMotionGLUT);
+glutPassiveMotionFunc(\&AntTweakBar::eventMouseMotionGLUT);
+glutKeyboardFunc(\&AntTweakBar::eventKeyboardGLUT);
+glutSpecialFunc(\&AntTweakBar::eventSpecialGLUT);
+AntTweakBar::GLUTModifiersFunc(\&glutGetModifiers);
 
 reshape(640, 480);
 my $bar = AntTweakBar->new("TweakBar & Perl");
