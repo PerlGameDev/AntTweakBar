@@ -73,6 +73,27 @@ sub add_separator {
     _add_separator($self->{_bar_ptr}, $name, $definition);
 }
 
+sub add_variable {
+    my ($self, %args) = @_;
+
+    for (qw/mode name type value/) {
+        croak "'$_' is mandatory argument for add_variable"
+            unless exists $args{$_};
+    }
+
+    my $mode       = $args{mode      };
+    my $name       = $args{name      };
+    my $type       = $args{type      };
+    my $value      = $args{value     };
+    my $definition = $args{definition} // "";
+
+    croak "value should be a reference"
+        unless ref($value);
+
+
+}
+
+
 # Preloaded methods go here.
 
 1;

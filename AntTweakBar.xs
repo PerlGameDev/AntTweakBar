@@ -7,7 +7,18 @@
 
 #include "AntTweakBar.h"
 
-static HV * btn_callback_mapping = (HV*)NULL;
+#define CONSTANT(NAME) newCONSTSUB(stash, #NAME, newSViv((int)NAME))
+#define ADD_TYPE(NAME, TW_TYPE, GETTER, SETTER)				    \
+  hv_store(_type_map, #NAME, strlen(#NAME), newSViv(TW_TYPE), 0);           \
+  hv_store(_getters_map, #NAME, strlen(#NAME), newSViv(PTR2IV(GETTER)), 0); \
+  hv_store(_setters_map, #NAME, strlen(#NAME), newSViv(PTR2IV(SETTER)), 0);
+
+
+static HV * _btn_callback_mapping = NULL;
+static HV * _type_map = NULL;
+static HV * _getters_map = NULL;
+static HV * _setters_map = NULL;
+static SV* _modifiers_callback = NULL;
 
 int init(TwGraphAPI graphic_api) {
   return TwInit(TW_OPENGL, NULL);
@@ -47,11 +58,11 @@ void _add_button(TwBar* bar, const char *name, SV* callback, const char *definit
   {
     croak("Callback for _add_button should be a closure...\n");
   }
-  if(!btn_callback_mapping) btn_callback_mapping = newHV();
+  if(!_btn_callback_mapping) _btn_callback_mapping = newHV();
   SV* callback_copy = newSVsv(callback);
 
   TwAddButton(bar, name, _button_callback_bridge, (void*) callback_copy, definition);
-  hv_store(btn_callback_mapping, (char*)callback_copy, sizeof(callback_copy), callback_copy, 0);
+  hv_store(_btn_callback_mapping, (char*)callback_copy, sizeof(callback_copy), callback_copy, 0);
 }
 
 void _add_separator(TwBar* bar, const char *name, const char *definition) {
@@ -73,8 +84,6 @@ int eventKeyboardGLUT(unsigned char key, int mouseX, int mouseY) {
 int eventSpecialGLUT(int key, int mouseX, int mouseY) {
   return TwEventSpecialGLUT(key, mouseX, mouseY);
 }
-
-static SV* _modifiers_callback = NULL;
 
 int _modifiers_callback_bridge(){
   if(!_modifiers_callback){
@@ -100,18 +109,31 @@ void GLUTModifiersFunc(SV* callback){
   TwGLUTModifiersFunc(_modifiers_callback_bridge);
 }
 
+void _add_variable(TwBar* bar, const char* mode, const char* name,
+		   const char* type, SV* value_ref, const char* definition) {
+	//TwAddVarCB(bar, name,
+}
+
+void _bool_getter(void* value, void* data){
+}
+
+void _bool_setter(void* value, void* data){
+}
 
 MODULE = AntTweakBar		PACKAGE = AntTweakBar
 
 BOOT:
 {
-#define CONSTANT(NAME) newCONSTSUB(stash, #NAME, newSViv((int)NAME))
   HV *stash = gv_stashpv("AntTweakBar", TRUE);
   CONSTANT(TW_OPENGL);
   CONSTANT(TW_OPENGL_CORE);
   CONSTANT(TW_DIRECT3D9);
   CONSTANT(TW_DIRECT3D10);
   CONSTANT(TW_DIRECT3D11);
+  _type_map = newHV();
+  _getters_map = newHV();
+  _setters_map = newHV();
+  ADD_TYPE(bool, TW_TYPE_BOOL32, _bool_getter, _bool_setter);
 }
 
 int
@@ -189,3 +211,13 @@ void
 GLUTModifiersFunc(callback)
   SV* callback
   PROTOTYPE: $
+
+void
+_add_variable(bar, mode, name, type, value_ref, definition)
+  TwBar* bar
+  const char* mode
+  const char* name
+  const char* type
+  SV* value_ref
+  const char* definition
+  PROTOTYPE: $$$$$$

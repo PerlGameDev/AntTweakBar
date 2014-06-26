@@ -65,6 +65,7 @@ $bar->add_button(
     cb         => sub { say "hello" },
     definition => "label='Wind velocity'",
 );
+$bar->add_separator("separator2");
 
 
 glutMainLoop;
