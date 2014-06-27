@@ -14,6 +14,7 @@ subtest "types creation checking" => sub {
         number  => 3.14,
         string  => "abc",
         color3f => [1, 2, 3],
+        color4f => [0.1, 0.2, 0.3, 0.4],
     );
     my $bar = AntTweakBar->new("TweakBar");
     for my $type (keys %type_for) {

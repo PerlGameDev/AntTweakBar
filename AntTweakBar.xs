@@ -216,52 +216,58 @@ void _string_setter(void* value, void* data){
 }
 
 /* color3f callbacks */
+#define COLOR_CALLBACK_GETTER(NUMBER) \
+void _color##NUMBER##f_getter(void* value, void* data) { \
+  SV* sv = SvRV((SV*) data); \
+  if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){ \
+    croak("color reference does not points to array any more\n"); \
+  } \
+  SvGETMAGIC(sv); \
+  AV* av = (AV*)SvRV(sv); \
+  int my_last = av_top_index(av); \
+  if(my_last != (NUMBER-1)) { \
+    Perl_croak("color3f array must be %d-valued array of floats, while provided: %d\n", NUMBER, my_last); \
+  } \
+  float* values = (float*) value; \
+  int i; \
+  for(i = 0; i <= my_last; i++) { \
+    SV** element = av_fetch(av, i, 0); \
+    if(element && SvNOK(*element)) { \
+      SvGETMAGIC(*element); \
+      values[i] = (float)SvNV(*element); \
+    } \
+  } \
+};
 
-void _color3f_getter(void* value, void* data){
-  SV* sv = SvRV((SV*) data);
-  if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){
-    croak("color3f reference does not points to array any more\n");
-  }
-  SvGETMAGIC(sv);
-  AV* av = (AV*)SvRV(sv);
-  int my_last = av_top_index(av);
-  if(my_last != 2) {
-     Perl_croak("color3f array must be 3-valued array of floats, while provided: %d\n", my_last);
-  }
-  float* values = (float*) value;
-  int i;
-  for(i = 0; i < 2; i++) {
-    SV** element = av_fetch(av, i, 0);
-    if(element && SvNOK(*element)) {
-      SvGETMAGIC(*element);
-      values[i] = (float)SvNV(*element);
-    }
-  }
-}
+#define COLOR_CALLBACK_SETTER(NUMBER) \
+void _color##NUMBER##f_setter(void* value, void* data) { \
+  SV* sv = SvRV((SV*) data); \
+  if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){ \
+    croak("color reference does not points to array any more\n"); \
+  } \
+  SvGETMAGIC(sv); \
+  AV* av = (AV*)SvRV(sv); \
+  int my_last = av_top_index(av); \
+  if(my_last != (NUMBER-1)) { \
+    Perl_croak("color3f array must be %d-valued array of floats, while provided: %d\n", NUMBER, my_last); \
+  } \
+  float* values = (float*) value; \
+  int i; \
+  for(i = 0; i <= my_last; i++) { \
+    SV** element = av_fetch(av, i, 0); \
+    if(element) { \
+      double value = values[i]; \
+      sv_setnv(*element, value); \
+      SvGETMAGIC(*element); \
+      SvSETMAGIC(sv); \
+    } \
+  } \
+};
 
-void _color3f_setter(void* value, void* data){
-  SV* sv = SvRV((SV*) data);
-  if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){
-    croak("color3f reference does not points to array any more\n");
-  }
-  SvGETMAGIC(sv);
-  AV* av = (AV*)SvRV(sv);
-  int my_last = av_top_index(av);
-  if(my_last != 2) {
-     Perl_croak("color3f array must be 3-valued array of floats, while provided: %d\n", my_last);
-  }
-  float* values = (float*) value;
-  int i;
-  for(i = 0; i < 3; i++) {
-    SV** element = av_fetch(av, i, 0);
-    if(element) {
-      double value = values[i];
-      sv_setnv(*element, value);
-      SvGETMAGIC(*element);
-      SvSETMAGIC(sv);
-    }
-  }
-}
+COLOR_CALLBACK_GETTER(3);
+COLOR_CALLBACK_SETTER(3);
+COLOR_CALLBACK_GETTER(4);
+COLOR_CALLBACK_SETTER(4);
 
 MODULE = AntTweakBar		PACKAGE = AntTweakBar
 
@@ -284,6 +290,7 @@ BOOT:
   ADD_TYPE(number, TW_TYPE_DOUBLE,  _number_getter, _number_setter);
   ADD_TYPE(string, TW_TYPE_CDSTRING, _string_getter, _string_setter);
   ADD_TYPE(color3f, TW_TYPE_COLOR3F, _color3f_getter, _color3f_setter);
+  ADD_TYPE(color4f, TW_TYPE_COLOR4F, _color4f_getter, _color4f_setter);
 }
 
 void
