@@ -185,6 +185,24 @@ void _number_setter(void* value, void* data){
   SvSETMAGIC(sv);
 }
 
+// string callbacks
+
+void _string_getter(void* value, void* data){
+  SV* sv = SvRV((SV*) data);
+  SvGETMAGIC(sv);
+  const char* string = SvPV_nolen(sv);
+  *(const char**)value = string;
+}
+
+void _string_setter(void* value, void* data){
+  SV* sv = SvRV((SV*) data);
+  const char* string = *(const char**)value;
+  printf("set string: %s\n", string);
+  sv_force_normal(sv);
+  sv_setpv(sv, string);
+  SvSETMAGIC(sv);
+}
+
 MODULE = AntTweakBar		PACKAGE = AntTweakBar
 
 BOOT:
@@ -204,6 +222,7 @@ BOOT:
   ADD_TYPE(bool, TW_TYPE_BOOL32, _int_getter, _int_setter);
   ADD_TYPE(integer, TW_TYPE_INT32,  _int_getter, _int_setter);
   ADD_TYPE(number, TW_TYPE_DOUBLE,  _number_getter, _number_setter);
+  ADD_TYPE(string, TW_TYPE_CDSTRING, _string_getter, _string_setter);
 }
 
 void

@@ -58,48 +58,63 @@ my $int_ro = 100;
 my $int_rw = 200;
 my $number_ro = 3.14;
 my $number_rw = 2.78;
-# types: bool, integer, number, string, color3f, color4f, direction
+my $string_ro = "abc";
+my $string_rw = "cde";
+# types: bool, integer, number, string, color3f, color4f, direction, quaternion, custom enums
 $bar->add_variable(
     mode       => 'ro',
     name       => "bool_ro",
-    type       =>  'bool',
+    type       => 'bool',
     value      => \$bool_ro,
     definition => "",
 );
 $bar->add_variable(
     mode       => 'rw',
     name       => "bool_rw",
-    type       =>  'bool',
+    type       => 'bool',
     value      => \$bool_rw,
     definition => "",
 );
 $bar->add_variable(
     mode       => 'ro',
     name       => "integer_ro",
-    type       =>  'integer',
+    type       => 'integer',
     value      => \$int_ro,
     definition => "",
 );
 $bar->add_variable(
     mode       => 'rw',
     name       => "integer_rw",
-    type       =>  'integer',
+    type       => 'integer',
     value      => \$int_rw,
     definition => "max=300 step=5",
 );
 $bar->add_variable(
     mode       => 'ro',
     name       => "number_ro",
-    type       =>  'number',
+    type       => 'number',
     value      => \$number_ro,
     definition => "",
 );
 $bar->add_variable(
     mode       => 'rw',
     name       => "number_rw",
-    type       =>  'number',
+    type       => 'number',
     value      => \$number_rw,
     definition => "min=0 step=0.01",
+);
+$bar->add_variable(
+    mode       => 'ro',
+    name       => "string_ro",
+    type       => 'string',
+    value      => \$string_ro,
+    definition => "",
+);
+$bar->add_variable(
+    mode       => 'rw',
+    name       => "string_rw",
+    type       => 'string',
+    value      => \$string_rw,
 );
 
 $bar->add_button(
@@ -108,6 +123,7 @@ $bar->add_button(
         say "bool_ro=$bool_ro, bool_rw=$bool_rw";
         say "int_ro=$int_ro, int_rw=$int_rw";
         say "number_ro=$number_ro, number_rw=$number_rw";
+        say "string_ro=$string_ro, string_rw=$string_rw";
     },
     definition => "label='dump'",
 );
