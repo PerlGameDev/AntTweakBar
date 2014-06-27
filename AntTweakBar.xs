@@ -157,11 +157,11 @@ void _add_variable(TwBar* bar, const char* mode, const char* name,
     Perl_croak("Variable addition error: %s", TwGetLastError());
 }
 
+// int/bool callbacks
 void _int_getter(void* value, void* data){
   SV* sv = SvRV((SV*) data);
   SvGETMAGIC(sv);
   int iv = SvIV(sv);
-  printf("_int_getter: %d\n", iv);
   *(int*)value = iv;
 }
 
@@ -169,7 +169,20 @@ void _int_setter(void* value, void* data){
   SV* sv = SvRV((SV*) data);
   sv_setiv(sv, *(int*)value );
   SvSETMAGIC(sv);
-  printf("_int_setter: %d\n", SvIV(sv));
+}
+
+// number(double) callbacks
+void _number_getter(void* value, void* data){
+  SV* sv = SvRV((SV*) data);
+  SvGETMAGIC(sv);
+  double dv = SvNV(sv);
+  *(double*)value = dv;
+}
+
+void _number_setter(void* value, void* data){
+  SV* sv = SvRV((SV*) data);
+  sv_setnv(sv, *(double*)value );
+  SvSETMAGIC(sv);
 }
 
 MODULE = AntTweakBar		PACKAGE = AntTweakBar
@@ -190,6 +203,7 @@ BOOT:
 
   ADD_TYPE(bool, TW_TYPE_BOOL32, _int_getter, _int_setter);
   ADD_TYPE(integer, TW_TYPE_INT32,  _int_getter, _int_setter);
+  ADD_TYPE(number, TW_TYPE_DOUBLE,  _number_getter, _number_setter);
 }
 
 void
