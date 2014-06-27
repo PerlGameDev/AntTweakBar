@@ -18,6 +18,7 @@ static HV * _btn_callback_mapping = NULL;
 static HV * _type_map = NULL;
 static HV * _getters_map = NULL;
 static HV * _setters_map = NULL;
+static HV * _sv_instance_types = NULL;
 static SV* _modifiers_callback = NULL;
 
 int init(TwGraphAPI graphic_api) {
@@ -110,14 +111,46 @@ void GLUTModifiersFunc(SV* callback){
 }
 
 void _add_variable(TwBar* bar, const char* mode, const char* name,
-		   const char* type, SV* value_ref, const char* definition) {
-	//TwAddVarCB(bar, name,
+		   const char* type, SV* value, const char* definition) {
+  SV** sv_type_ref = hv_fetch(_type_map, type, strlen(type), 0);
+  TwType tw_type = 0;
+  if(sv_type_ref) {
+    tw_type = (TwType) SvIV(*sv_type_ref);
+  }
+  if(!sv_type_ref) {
+    Perl_croak("Undefined var type: %s", type);
+  }
+
+  SV** getter_ref = hv_fetch(_getters_map, type, strlen(type), 0);
+  IV  iv_getter = SvIV(*getter_ref);
+  TwGetVarCallback tw_getter = (TwGetVarCallback*) INT2PTR(IV, iv_getter);
+
+  TwSetVarCallback tw_setter = NULL;
+  if(strcmp(mode, "rw") == 0) {
+    SV** getter_ref = hv_fetch(_setters_map, type, strlen(type), 0);
+    IV  iv_setter = SvIV(*getter_ref);
+    tw_setter = (TwSetVarCallback*) INT2PTR(IV, iv_setter);
+  }
+
+  SV* value_copy = newSVsv(value);
+  //SV* value_copy = newRV_inc(value);
+  hv_store(_sv_instance_types, (char*)value_copy, sizeof(value_copy), *sv_type_ref, 0);
+  TwAddVarCB(bar, name, tw_type, tw_setter, tw_getter, value_copy, definition);
 }
 
-void _bool_getter(void* value, void* data){
+void _int_getter(void* value, void* data){
+  SV* sv = SvRV((SV*) data);
+  SvGETMAGIC(sv);
+  int iv = SvIV(sv);
+  printf("_int_getter: %d\n", iv);
+  *(int*)value = iv;
 }
 
-void _bool_setter(void* value, void* data){
+void _int_setter(void* value, void* data){
+  SV* sv = SvRV((SV*) data);
+  sv_setiv(sv, *(int*)value );
+  SvSETMAGIC(sv);
+  printf("_int_setter: %d\n", SvIV(sv));
 }
 
 MODULE = AntTweakBar		PACKAGE = AntTweakBar
@@ -130,10 +163,14 @@ BOOT:
   CONSTANT(TW_DIRECT3D9);
   CONSTANT(TW_DIRECT3D10);
   CONSTANT(TW_DIRECT3D11);
+
   _type_map = newHV();
   _getters_map = newHV();
   _setters_map = newHV();
-  ADD_TYPE(bool, TW_TYPE_BOOL32, _bool_getter, _bool_setter);
+  _sv_instance_types = newHV();
+
+  ADD_TYPE(bool, TW_TYPE_BOOL32, _int_getter, _int_setter);
+  ADD_TYPE(integer, TW_TYPE_INT32,  _int_getter, _int_setter);
 }
 
 int
@@ -213,11 +250,11 @@ GLUTModifiersFunc(callback)
   PROTOTYPE: $
 
 void
-_add_variable(bar, mode, name, type, value_ref, definition)
+_add_variable(bar, mode, name, type, value, definition)
   TwBar* bar
   const char* mode
   const char* name
   const char* type
-  SV* value_ref
+  SV* value
   const char* definition
   PROTOTYPE: $$$$$$

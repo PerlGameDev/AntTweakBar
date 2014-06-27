@@ -90,7 +90,7 @@ sub add_variable {
     croak "value should be a reference"
         unless ref($value);
 
-
+    _add_variable($self->{_bar_ptr}, $mode, $name, $type, $value, $definition);
 }
 
 
