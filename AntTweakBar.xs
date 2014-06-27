@@ -21,28 +21,38 @@ static HV * _setters_map = NULL;
 static HV * _sv_instance_types = NULL;
 static SV* _modifiers_callback = NULL;
 
-int init(TwGraphAPI graphic_api) {
-  return TwInit(TW_OPENGL, NULL);
+void init(TwGraphAPI graphic_api) {
+  int result = TwInit(TW_OPENGL, NULL);
+  if(!result)
+    Perl_croak("Initialization error: %s", TwGetLastError());
 }
 
-int terminate() {
-  return TwTerminate();
+void terminate() {
+  int result = TwTerminate();
+  if(!result)
+    Perl_croak("Termination error: %s", TwGetLastError());
 }
 
-int window_size(width, height) {
-  return TwWindowSize(width, height);
+void window_size(width, height) {
+  int result = TwWindowSize(width, height);
+  if(!result)
+    Perl_croak("Set window size error: %s", TwGetLastError());
 }
 
 TwBar* _create(const char *name) {
   return TwNewBar(name);
 }
 
-int _destroy(TwBar* bar) {
-  return TwDeleteBar(bar);
+void _destroy(TwBar* bar) {
+  int result = TwDeleteBar(bar);
+  if(!result)
+    Perl_croak("AntTweakBar deletion error: %s", TwGetLastError());
 }
 
-int draw() {
-  return TwDraw();
+void draw() {
+  int result = TwDraw();
+  if(!result)
+    Perl_croak("AntTweakBar drawing error: %s", TwGetLastError());
 }
 
 void _button_callback_bridge(void *data) {
@@ -62,26 +72,34 @@ void _add_button(TwBar* bar, const char *name, SV* callback, const char *definit
   if(!_btn_callback_mapping) _btn_callback_mapping = newHV();
   SV* callback_copy = newSVsv(callback);
 
-  TwAddButton(bar, name, _button_callback_bridge, (void*) callback_copy, definition);
+  int result = TwAddButton(bar, name, _button_callback_bridge, (void*) callback_copy, definition);
+  if(!result)
+    Perl_croak("Button addition error: %s", TwGetLastError());
   hv_store(_btn_callback_mapping, (char*)callback_copy, sizeof(callback_copy), callback_copy, 0);
 }
 
 void _add_separator(TwBar* bar, const char *name, const char *definition) {
-  TwAddSeparator(bar, name, definition);
+  int result = TwAddSeparator(bar, name, definition);
+  if(!result)
+    Perl_croak("Separator addition error: %s", TwGetLastError());
 }
 
+// returns 1 if it has been handled by AntTweekBar
 int eventMouseButtonGLUT(int button, int state, int x, int y){
   return TwEventMouseButtonGLUT(button, state, x, y);
 }
 
+// returns 1 if it has been handled by AntTweekBar
 int eventMouseMotionGLUT(int mouseX, int mouseY){
   return TwEventMouseMotionGLUT(mouseX, mouseY);
 }
 
+// returns 1 if it has been handled by AntTweekBar
 int eventKeyboardGLUT(unsigned char key, int mouseX, int mouseY) {
   return TwEventKeyboardGLUT(key, mouseX, mouseY);
 }
 
+// returns 1 if it has been handled by AntTweekBar
 int eventSpecialGLUT(int key, int mouseX, int mouseY) {
   return TwEventSpecialGLUT(key, mouseX, mouseY);
 }
@@ -96,7 +114,7 @@ int _modifiers_callback_bridge(){
   call_sv(_modifiers_callback, G_NOARGS|G_DISCARD|G_VOID);
 }
 
-void GLUTModifiersFunc(SV* callback){
+int GLUTModifiersFunc(SV* callback){
   SvGETMAGIC(callback);
   if(!SvROK(callback)
      || (SvTYPE(SvRV(callback)) != SVt_PVCV))
@@ -107,11 +125,11 @@ void GLUTModifiersFunc(SV* callback){
      SvREFCNT_dec(_modifiers_callback);
   }
   _modifiers_callback = newSVsv(callback);
-  TwGLUTModifiersFunc(_modifiers_callback_bridge);
+  return TwGLUTModifiersFunc(_modifiers_callback_bridge);
 }
 
 void _add_variable(TwBar* bar, const char* mode, const char* name,
-		   const char* type, SV* value, const char* definition) {
+		   const char* type, SV* value_ref, const char* definition) {
   SV** sv_type_ref = hv_fetch(_type_map, type, strlen(type), 0);
   TwType tw_type = 0;
   if(sv_type_ref) {
@@ -132,10 +150,11 @@ void _add_variable(TwBar* bar, const char* mode, const char* name,
     tw_setter = (TwSetVarCallback*) INT2PTR(IV, iv_setter);
   }
 
-  SV* value_copy = newSVsv(value);
-  //SV* value_copy = newRV_inc(value);
+  SV* value_copy = newSVsv(value_ref);
   hv_store(_sv_instance_types, (char*)value_copy, sizeof(value_copy), *sv_type_ref, 0);
-  TwAddVarCB(bar, name, tw_type, tw_setter, tw_getter, value_copy, definition);
+  int result = TwAddVarCB(bar, name, tw_type, tw_setter, tw_getter, value_copy, definition);
+  if(!result)
+    Perl_croak("Variable addition error: %s", TwGetLastError());
 }
 
 void _int_getter(void* value, void* data){
@@ -173,12 +192,12 @@ BOOT:
   ADD_TYPE(integer, TW_TYPE_INT32,  _int_getter, _int_setter);
 }
 
-int
+void
 init(graphic_api)
   TwGraphAPI graphic_api
   PROTOTYPE: $
 
-int
+void
 terminate()
 
 
@@ -187,12 +206,12 @@ _create(name)
   const char *name
   PROTOTYPE: $
 
-int
+void
 _destroy(bar)
   TwBar* bar
   PROTOTYPE: $
 
-int
+void
 window_size(width, height)
   int width
   int height
@@ -213,7 +232,7 @@ _add_separator(bar, name, definition)
   const char *definition
   PROTOTYPE: $$$
 
-int
+void
 draw()
 
 int
@@ -244,7 +263,7 @@ eventSpecialGLUT(key, mouseX, mouseY)
   int mouseY
   PROTOTYPE: $$$
 
-void
+int
 GLUTModifiersFunc(callback)
   SV* callback
   PROTOTYPE: $

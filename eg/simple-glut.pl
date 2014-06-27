@@ -92,7 +92,7 @@ $bar->add_button(
         say "bool_ro=$bool_ro, bool_rw=$bool_rw";
         say "int_ro=$int_ro, int_rw=$int_rw";
     },
-    definition => "label='dump",
+    definition => "label='dump'",
 );
 $bar->add_separator("separator2");
 
