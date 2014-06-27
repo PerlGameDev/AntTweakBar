@@ -2,6 +2,7 @@ use 5.12.0;
 
 use OpenGL qw/:all/;
 use AntTweakBar qw/:all/;
+use Data::Dump qw/dump/;
 
 sub display {
     glClearColor(0, 0, 0, 1);
@@ -60,6 +61,8 @@ my $number_ro = 3.14;
 my $number_rw = 2.78;
 my $string_ro = "abc";
 my $string_rw = "cde";
+my $color3f_ro = [1.0, 1.0, 0.0];
+my $color3f_rw = [0.5, 0.5, 1.0];
 # types: bool, integer, number, string, color3f, color4f, direction, quaternion, custom enums
 $bar->add_variable(
     mode       => 'ro',
@@ -116,6 +119,18 @@ $bar->add_variable(
     type       => 'string',
     value      => \$string_rw,
 );
+$bar->add_variable(
+    mode       => 'ro',
+    name       => "color3f_ro",
+    type       => 'color3f',
+    value      => \$color3f_ro,
+);
+$bar->add_variable(
+    mode       => 'rw',
+    name       => "color3f_rw",
+    type       => 'color3f',
+    value      => \$color3f_rw,
+);
 
 $bar->add_button(
     name       => "my-btn-name",
@@ -124,6 +139,7 @@ $bar->add_button(
         say "int_ro=$int_ro, int_rw=$int_rw";
         say "number_ro=$number_ro, number_rw=$number_rw";
         say "string_ro=$string_ro, string_rw=$string_rw";
+        say "color3f_ro=", dump($color3f_ro), ", color3f_rw=", dump($color3f_rw);
     },
     definition => "label='dump'",
 );

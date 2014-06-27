@@ -93,22 +93,22 @@ void _add_separator(TwBar* bar, const char *name, const char *definition) {
     Perl_croak("Separator addition error: %s", TwGetLastError());
 }
 
-// returns 1 if it has been handled by AntTweekBar
+/* returns 1 if it has been handled by AntTweekBar */
 int eventMouseButtonGLUT(int button, int state, int x, int y){
   return TwEventMouseButtonGLUT(button, state, x, y);
 }
 
-// returns 1 if it has been handled by AntTweekBar
+/* returns 1 if it has been handled by AntTweekBar */
 int eventMouseMotionGLUT(int mouseX, int mouseY){
   return TwEventMouseMotionGLUT(mouseX, mouseY);
 }
 
-// returns 1 if it has been handled by AntTweekBar
+/* returns 1 if it has been handled by AntTweekBar */
 int eventKeyboardGLUT(unsigned char key, int mouseX, int mouseY) {
   return TwEventKeyboardGLUT(key, mouseX, mouseY);
 }
 
-// returns 1 if it has been handled by AntTweekBar
+/* returns 1 if it has been handled by AntTweekBar */
 int eventSpecialGLUT(int key, int mouseX, int mouseY) {
   return TwEventSpecialGLUT(key, mouseX, mouseY);
 }
@@ -167,7 +167,8 @@ void _add_variable(TwBar* bar, const char* mode, const char* name,
     Perl_croak("Variable addition error: %s", TwGetLastError());
 }
 
-// int/bool callbacks
+/* int/bool callbacks */
+
 void _int_getter(void* value, void* data){
   SV* sv = SvRV((SV*) data);
   SvGETMAGIC(sv);
@@ -181,7 +182,8 @@ void _int_setter(void* value, void* data){
   SvSETMAGIC(sv);
 }
 
-// number(double) callbacks
+/* number(double) callbacks */
+
 void _number_getter(void* value, void* data){
   SV* sv = SvRV((SV*) data);
   SvGETMAGIC(sv);
@@ -195,7 +197,7 @@ void _number_setter(void* value, void* data){
   SvSETMAGIC(sv);
 }
 
-// string callbacks
+/* string callbacks */
 
 void _string_getter(void* value, void* data){
   SV* sv = SvRV((SV*) data);
@@ -211,6 +213,54 @@ void _string_setter(void* value, void* data){
   sv_force_normal(sv);
   sv_setpv(sv, string);
   SvSETMAGIC(sv);
+}
+
+/* color3f callbacks */
+
+void _color3f_getter(void* value, void* data){
+  SV* sv = SvRV((SV*) data);
+  if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){
+    croak("color3f reference does not points to array any more\n");
+  }
+  SvGETMAGIC(sv);
+  AV* av = (AV*)SvRV(sv);
+  int my_last = av_top_index(av);
+  if(my_last != 2) {
+     Perl_croak("color3f array must be 3-valued array of floats, while provided: %d\n", my_last);
+  }
+  float* values = (float*) value;
+  int i;
+  for(i = 0; i < 2; i++) {
+    SV** element = av_fetch(av, i, 0);
+    if(element && SvNOK(*element)) {
+      SvGETMAGIC(*element);
+      values[i] = (float)SvNV(*element);
+    }
+  }
+}
+
+void _color3f_setter(void* value, void* data){
+  SV* sv = SvRV((SV*) data);
+  if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){
+    croak("color3f reference does not points to array any more\n");
+  }
+  SvGETMAGIC(sv);
+  AV* av = (AV*)SvRV(sv);
+  int my_last = av_top_index(av);
+  if(my_last != 2) {
+     Perl_croak("color3f array must be 3-valued array of floats, while provided: %d\n", my_last);
+  }
+  float* values = (float*) value;
+  int i;
+  for(i = 0; i < 3; i++) {
+    SV** element = av_fetch(av, i, 0);
+    if(element) {
+      double value = values[i];
+      sv_setnv(*element, value);
+      SvGETMAGIC(*element);
+      SvSETMAGIC(sv);
+    }
+  }
 }
 
 MODULE = AntTweakBar		PACKAGE = AntTweakBar
@@ -233,6 +283,7 @@ BOOT:
   ADD_TYPE(integer, TW_TYPE_INT32,  _int_getter, _int_setter);
   ADD_TYPE(number, TW_TYPE_DOUBLE,  _number_getter, _number_setter);
   ADD_TYPE(string, TW_TYPE_CDSTRING, _string_getter, _string_setter);
+  ADD_TYPE(color3f, TW_TYPE_COLOR3F, _color3f_getter, _color3f_setter);
 }
 
 void
