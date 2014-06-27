@@ -13,13 +13,20 @@
   hv_store(_getters_map, #NAME, strlen(#NAME), newSViv(PTR2IV(GETTER)), 0); \
   hv_store(_setters_map, #NAME, strlen(#NAME), newSViv(PTR2IV(SETTER)), 0);
 
-
 static HV * _btn_callback_mapping = NULL;
 static HV * _type_map = NULL;
 static HV * _getters_map = NULL;
 static HV * _setters_map = NULL;
 static HV * _sv_instance_types = NULL;
 static SV* _modifiers_callback = NULL;
+
+
+int _disabled_lib_mode() {
+  HV* env = get_hv("main::ENV", 0);
+  const char* env_flag = "ANTTWEAKBAR_DISABLE_LIB";
+  int marker = hv_exists(env, env_flag, strlen(env_flag));
+  return marker;
+}
 
 void init(TwGraphAPI graphic_api) {
   int result = TwInit(TW_OPENGL, NULL);
@@ -40,10 +47,12 @@ void window_size(width, height) {
 }
 
 TwBar* _create(const char *name) {
+  if(_disabled_lib_mode()) return (TwBar*)-1;
   return TwNewBar(name);
 }
 
 void _destroy(TwBar* bar) {
+  if(_disabled_lib_mode()) return;
   int result = TwDeleteBar(bar);
   if(!result)
     Perl_croak("AntTweakBar deletion error: %s", TwGetLastError());
@@ -152,6 +161,7 @@ void _add_variable(TwBar* bar, const char* mode, const char* name,
 
   SV* value_copy = newSVsv(value_ref);
   hv_store(_sv_instance_types, (char*)value_copy, sizeof(value_copy), *sv_type_ref, 0);
+  if(_disabled_lib_mode()) return;
   int result = TwAddVarCB(bar, name, tw_type, tw_setter, tw_getter, value_copy, definition);
   if(!result)
     Perl_croak("Variable addition error: %s", TwGetLastError());
