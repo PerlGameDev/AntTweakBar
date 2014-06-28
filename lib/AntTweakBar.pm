@@ -93,6 +93,11 @@ sub add_variable {
     _add_variable($self->{_bar_ptr}, $mode, $name, $type, $value, $definition);
 }
 
+sub remove_variable {
+    my ($self, $name) = @_;
+    _remove_variable($self->{_bar_ptr}, $name);
+}
+
 
 # Preloaded methods go here.
 

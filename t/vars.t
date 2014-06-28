@@ -33,7 +33,10 @@ subtest "types creation checking" => sub {
             type       => $type,
             value      => \$rw,
         );
-        ok "type $type seems to be added";
+        pass "type $type variables seems to be added";
+        $bar->remove_variable("${type}_rw");
+        $bar->remove_variable("${type}_ro");
+        pass "type $type variables seems to be removed";
     }
 };
 

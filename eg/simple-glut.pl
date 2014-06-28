@@ -191,6 +191,18 @@ $bar->add_button(
     definition => "label='dump'",
 );
 $bar->add_separator("separator2");
-
+$bar->add_button(
+    name => "remove quaternions",
+    cb   => sub {
+        if ($quaternion_ro) {
+            $bar->remove_variable('quaternion_ro');
+            $quaternion_ro = undef;
+        }
+        if ($quaternion_rw) {
+            $bar->remove_variable('quaternion_rw');
+            $quaternion_rw = undef;
+        }
+    }
+);
 
 glutMainLoop;

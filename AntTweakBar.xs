@@ -18,6 +18,7 @@ static HV * _type_map = NULL;
 static HV * _getters_map = NULL;
 static HV * _setters_map = NULL;
 static HV * _sv_instance_types = NULL;
+static HV * _sv_copy_names = NULL;
 static SV* _modifiers_callback = NULL;
 
 
@@ -161,10 +162,26 @@ void _add_variable(TwBar* bar, const char* mode, const char* name,
 
   SV* value_copy = newSVsv(value_ref);
   hv_store(_sv_instance_types, (char*)value_copy, sizeof(value_copy), *sv_type_ref, 0);
+  hv_store(_sv_copy_names, name, strlen(name), value_copy, 0);
   if(_disabled_lib_mode()) return;
   int result = TwAddVarCB(bar, name, tw_type, tw_setter, tw_getter, value_copy, definition);
-  if(!result)
+  if(!result){
+    /* hv_delete(_sv_instance_types, (char*)value_copy, sizeof(value_copy), 0) */;
+    hv_delete(_sv_copy_names, name, strlen(name), 0);
     Perl_croak("Variable addition error: %s", TwGetLastError());
+  }
+}
+
+void _remove_variable(TwBar* bar, const char* name) {
+  SV* value_copy = hv_delete(_sv_copy_names, name, strlen(name), 0);
+  if(!value_copy) {
+    Perl_croak("No variable with name: %s", name);
+  }
+  /* hv_delete(_sv_instance_types, (char*)value_copy, sizeof(value_copy), 0); */
+  if(_disabled_lib_mode()) return;
+  int result = TwRemoveVar(bar, name);
+  if(!result)
+    Perl_croak("Removing variable %s error: %s", name, TwGetLastError());
 }
 
 /* int/bool callbacks */
@@ -288,6 +305,7 @@ BOOT:
   _getters_map = newHV();
   _setters_map = newHV();
   _sv_instance_types = newHV();
+  _sv_copy_names = newHV();
 
   ADD_TYPE(bool, TW_TYPE_BOOL32, _int_getter, _int_setter);
   ADD_TYPE(integer, TW_TYPE_INT32,  _int_getter, _int_setter);
@@ -383,4 +401,10 @@ _add_variable(bar, mode, name, type, value, definition)
   const char* type
   SV* value
   const char* definition
+  PROTOTYPE: $$$$$$
+
+void
+_remove_variable(bar, name)
+  TwBar* bar
+  const char* name
   PROTOTYPE: $$$$$$
