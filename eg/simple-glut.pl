@@ -2,6 +2,7 @@ use 5.12.0;
 
 use OpenGL qw/:all/;
 use AntTweakBar qw/:all/;
+use AntTweakBar::Type;
 use Data::Dump qw/dump/;
 
 sub display {
@@ -53,23 +54,29 @@ reshape(640, 750);
 my $bar = AntTweakBar->new("TweakBar & Perl");
 $bar->add_separator("x-sep");
 
-my $bool_ro = 1;
-my $bool_rw = 0;
-my $int_ro = 100;
-my $int_rw = 200;
-my $number_ro = 3.14;
-my $number_rw = 2.78;
-my $string_ro = "abc";
-my $string_rw = "cde";
-my $color3f_ro = [1.0, 1.0, 0.0];
-my $color3f_rw = [0.5, 0.5, 1.0];
-my $color4f_ro = [1.0, 1.0, 0.0, 0.1];
-my $color4f_rw = [0.5, 0.5, 1.0, 0.2];
-my $direction_ro = [1.0, 0.0, 0.0];
-my $direction_rw = [0.0, 0.0, 1.0];
+my $custom_type = AntTweakBar::Type->new(
+    "custom_arr",
+    ["a", "b", "c"],
+);
+
+my $bool_ro       = 1;
+my $bool_rw       = 0;
+my $int_ro        = 100;
+my $int_rw        = 200;
+my $number_ro     = 3.14;
+my $number_rw     = 2.78;
+my $string_ro     = "abc";
+my $string_rw     = "cde";
+my $color3f_ro    = [1.0, 1.0, 0.0];
+my $color3f_rw    = [0.5, 0.5, 1.0];
+my $color4f_ro    = [1.0, 1.0, 0.0, 0.1];
+my $color4f_rw    = [0.5, 0.5, 1.0, 0.2];
+my $direction_ro  = [1.0, 0.0, 0.0];
+my $direction_rw  = [0.0, 0.0, 1.0];
 my $quaternion_ro = [1.0, 0.1, 0.0, 0.0];
 my $quaternion_rw = [0.0, 1.0, 1.1, 0.0];
-
+my $custom_ro     = "a";
+my $custom_rw     = undef;
 
 # types: bool, integer, number, string, color3f, color4f, direction, quaternion, custom enums
 $bar->add_variable(
@@ -175,6 +182,18 @@ $bar->add_variable(
     type       => 'quaternion',
     value      => \$quaternion_rw,
 );
+$bar->add_variable(
+    mode       => 'ro',
+    name       => "custom_array_ro",
+    type       => $custom_type,
+    value      => \$custom_ro,
+);
+$bar->add_variable(
+    mode       => 'rw',
+    name       => "custom_array_rs",
+    type       => $custom_type,
+    value      => \$custom_rw,
+);
 
 $bar->add_button(
     name       => "my-btn-name",
@@ -187,6 +206,7 @@ $bar->add_button(
         say "color4f_ro=", dump($color4f_ro), ", color4f_rw=", dump($color4f_rw);
         say "direction_ro=", dump($direction_ro), ", direction_rw=", dump($direction_rw);
         say "quaternion_ro=", dump($quaternion_ro), ", quaternion_rw=", dump($quaternion_rw);
+        say "custom_rw=$custom_rw";
     },
     definition => "label='dump'",
 );

@@ -8,19 +8,23 @@
 #include "AntTweakBar.h"
 
 #define CONSTANT(NAME) newCONSTSUB(stash, #NAME, newSViv((int)NAME))
-#define ADD_TYPE(NAME, TW_TYPE, GETTER, SETTER)				    \
-  hv_store(_type_map, #NAME, strlen(#NAME), newSViv(TW_TYPE), 0);           \
-  hv_store(_getters_map, #NAME, strlen(#NAME), newSViv(PTR2IV(GETTER)), 0); \
-  hv_store(_setters_map, #NAME, strlen(#NAME), newSViv(PTR2IV(SETTER)), 0);
+
+void _int_getter(void* value, void* data);
+void _int_setter(const void* value, void* data);
 
 static HV * _btn_callback_mapping = NULL;
 static HV * _type_map = NULL;
 static HV * _getters_map = NULL;
 static HV * _setters_map = NULL;
-static HV * _sv_instance_types = NULL;
 static HV * _sv_copy_names = NULL;
 static SV* _modifiers_callback = NULL;
 
+static void _add_type(const char* name, TwType type,
+		      TwGetVarCallback getter, TwSetVarCallback setter) {
+  hv_store(_type_map, name, strlen(name), newSViv(type), 0);
+  hv_store(_getters_map, name, strlen(name), newSViv(PTR2IV(getter)), 0);
+  hv_store(_setters_map, name, strlen(name), newSViv(PTR2IV(setter)), 0);
+}
 
 int _disabled_lib_mode() {
   HV* env = get_hv("main::ENV", 0);
@@ -151,22 +155,20 @@ void _add_variable(TwBar* bar, const char* mode, const char* name,
 
   SV** getter_ref = hv_fetch(_getters_map, type, strlen(type), 0);
   IV  iv_getter = SvIV(*getter_ref);
-  TwGetVarCallback tw_getter = (TwGetVarCallback*) INT2PTR(IV, iv_getter);
+  TwGetVarCallback tw_getter = (TwGetVarCallback) INT2PTR(IV, iv_getter);
 
   TwSetVarCallback tw_setter = NULL;
   if(strcmp(mode, "rw") == 0) {
     SV** getter_ref = hv_fetch(_setters_map, type, strlen(type), 0);
     IV  iv_setter = SvIV(*getter_ref);
-    tw_setter = (TwSetVarCallback*) INT2PTR(IV, iv_setter);
+    tw_setter = (TwSetVarCallback) INT2PTR(IV, iv_setter);
   }
 
   SV* value_copy = newSVsv(value_ref);
-  hv_store(_sv_instance_types, (char*)value_copy, sizeof(value_copy), *sv_type_ref, 0);
   hv_store(_sv_copy_names, name, strlen(name), value_copy, 0);
   if(_disabled_lib_mode()) return;
   int result = TwAddVarCB(bar, name, tw_type, tw_setter, tw_getter, value_copy, definition);
   if(!result){
-    /* hv_delete(_sv_instance_types, (char*)value_copy, sizeof(value_copy), 0) */;
     hv_delete(_sv_copy_names, name, strlen(name), 0);
     Perl_croak("Variable addition error: %s", TwGetLastError());
   }
@@ -177,13 +179,50 @@ void _remove_variable(TwBar* bar, const char* name) {
   if(!value_copy) {
     Perl_croak("No variable with name: %s", name);
   }
-  /* hv_delete(_sv_instance_types, (char*)value_copy, sizeof(value_copy), 0); */
   if(_disabled_lib_mode()) return;
   int result = TwRemoveVar(bar, name);
   if(!result)
     Perl_croak("Removing variable %s error: %s", name, TwGetLastError());
 }
 
+TwType _register_enum(const char* name, SV* hash_ref){
+  if(!SvOK(hash_ref) || !SvROK(hash_ref)){
+    Perl_croak("Hashref cannot be undefined");
+  }
+  HV* hv =(HV*) SvRV(hash_ref);
+  HE* entry;
+  U32 total_keys = 0;
+  hv_iterinit(hv);
+  while((entry = hv_iternext(hv)) != NULL){
+    I32 key_length;
+    char* key = hv_iterkey(entry, &key_length);
+    SV* sv_index = hv_iterval(hv, entry);
+    if(sv_index && SvOK(sv_index)){
+      total_keys++;
+    }
+  }
+  TwEnumVal* enum_values = (TwEnumVal*) malloc(sizeof(TwEnumVal) * total_keys);
+  TwEnumVal* enum_ptr = enum_values;
+  while((entry = hv_iternext(hv)) != NULL){
+    I32 key_length;
+    char* key = hv_iterkey(entry, &key_length);
+    SV* sv_label = hv_iterval(hv, entry);
+    if(sv_label && SvOK(sv_label)){
+      const char* label = SvPV_nolen(sv_label);
+      (*enum_ptr).Value = atoi(key);
+      (*enum_ptr).Label = label;
+      enum_ptr++;
+    }
+  }
+  TwType new_type = !_disabled_lib_mode()
+    ? TwDefineEnum(name, enum_values, total_keys)
+    : 0;
+  _add_type(name, new_type, _int_getter, _int_setter);
+  free(enum_values);
+  return new_type;
+}
+
+/* CALLBACKS */
 /* int/bool callbacks */
 
 void _int_getter(void* value, void* data){
@@ -193,7 +232,7 @@ void _int_getter(void* value, void* data){
   *(int*)value = iv;
 }
 
-void _int_setter(void* value, void* data){
+void _int_setter(const void* value, void* data){
   SV* sv = SvRV((SV*) data);
   sv_setiv(sv, *(int*)value );
   SvSETMAGIC(sv);
@@ -208,7 +247,7 @@ void _number_getter(void* value, void* data){
   *(double*)value = dv;
 }
 
-void _number_setter(void* value, void* data){
+void _number_setter(const void* value, void* data){
   SV* sv = SvRV((SV*) data);
   sv_setnv(sv, *(double*)value );
   SvSETMAGIC(sv);
@@ -223,7 +262,7 @@ void _string_getter(void* value, void* data){
   *(const char**)value = string;
 }
 
-void _string_setter(void* value, void* data){
+void _string_setter(const void* value, void* data){
   SV* sv = SvRV((SV*) data);
   const char* string = *(const char**)value;
   printf("set string: %s\n", string);
@@ -257,7 +296,7 @@ void NAME(void* value, void* data) { \
 };
 
 #define DOUBLE_CALLBACK_SETTER(NAME, NUMBER, TYPE)	 \
-void NAME(void* value, void* data) { \
+void NAME(const void* value, void* data) { \
   SV* sv = SvRV((SV*) data); \
   if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){ \
     croak("reference does not point to array any more\n"); \
@@ -304,17 +343,16 @@ BOOT:
   _type_map = newHV();
   _getters_map = newHV();
   _setters_map = newHV();
-  _sv_instance_types = newHV();
   _sv_copy_names = newHV();
 
-  ADD_TYPE(bool, TW_TYPE_BOOL32, _int_getter, _int_setter);
-  ADD_TYPE(integer, TW_TYPE_INT32,  _int_getter, _int_setter);
-  ADD_TYPE(number, TW_TYPE_DOUBLE,  _number_getter, _number_setter);
-  ADD_TYPE(string, TW_TYPE_CDSTRING, _string_getter, _string_setter);
-  ADD_TYPE(color3f, TW_TYPE_COLOR3F, _color3f_getter, _color3f_setter);
-  ADD_TYPE(color4f, TW_TYPE_COLOR4F, _color4f_getter, _color4f_setter);
-  ADD_TYPE(direction, TW_TYPE_DIR3D, _dir3d_getter, _dir3d_setter);
-  ADD_TYPE(quaternion, TW_TYPE_QUAT4D, _quat4d_getter, _quat4d_setter);
+  _add_type("bool", TW_TYPE_BOOL32, _int_getter, _int_setter);
+  _add_type("integer", TW_TYPE_INT32,  _int_getter, _int_setter);
+  _add_type("number", TW_TYPE_DOUBLE,  _number_getter, _number_setter);
+  _add_type("string", TW_TYPE_CDSTRING, _string_getter, _string_setter);
+  _add_type("color3f", TW_TYPE_COLOR3F, _color3f_getter, _color3f_setter);
+  _add_type("color4f", TW_TYPE_COLOR4F, _color4f_getter, _color4f_setter);
+  _add_type("direction", TW_TYPE_DIR3D, _dir3d_getter, _dir3d_setter);
+  _add_type("quaternion", TW_TYPE_QUAT4D, _quat4d_getter, _quat4d_setter);
 }
 
 void
@@ -408,3 +446,9 @@ _remove_variable(bar, name)
   TwBar* bar
   const char* name
   PROTOTYPE: $$$$$$
+
+TwType
+_register_enum(name, hash_ref)
+  const char* name
+  SV* hash_ref
+  PROTOTYPE: $$

@@ -4,6 +4,7 @@ use Test::Fatal;
 use Test::More;
 use Test::Warnings;
 use AntTweakBar qw/:all/;
+use AntTweakBar::Type;
 
 $ENV{ANTTWEAKBAR_DISABLE_LIB} = 1;
 
@@ -38,6 +39,40 @@ subtest "types creation checking" => sub {
         $bar->remove_variable("${type}_ro");
         pass "type $type variables seems to be removed";
     }
+};
+
+subtest "register enum" => sub {
+    my $bar = AntTweakBar->new("TweakBar");
+    my $t1 = AntTweakBar::Type->new(
+        "custom_arr",
+        ["a", "b", "c"],
+    );
+    my $t1_var = "a";
+    pass "custom_array type has been created";
+    $bar->add_variable(
+        mode       => 'rw',
+        name       => "ca_ro",
+        type       => $t1,
+        value      => \$t1_var,
+    );
+    pass "var of custom_array type has been added";
+    my $t2 = AntTweakBar::Type->new(
+        "custom_hash",
+        {
+            d   => 2,
+            e   => 10,
+            hhh => 11,
+        },
+    );
+    pass "custom_hash type has been created";
+    my $t2_var = undef;
+    $bar->add_variable(
+        mode       => 'ro',
+        name       => "ca_ro",
+        type       => $t2,
+        value      => \$t2_var,
+    );
+    pass "var of custom_hash type has been added";
 };
 
 subtest "invalid type" => sub {
