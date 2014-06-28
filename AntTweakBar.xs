@@ -215,20 +215,20 @@ void _string_setter(void* value, void* data){
   SvSETMAGIC(sv);
 }
 
-/* color3f callbacks */
-#define COLOR_CALLBACK_GETTER(NUMBER) \
-void _color##NUMBER##f_getter(void* value, void* data) { \
+/* double/float array callback generators */
+#define DOUBLE_CALLBACK_GETTER(NAME, NUMBER, TYPE)	 \
+void NAME(void* value, void* data) { \
   SV* sv = SvRV((SV*) data); \
   if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){ \
-    croak("color reference does not points to array any more\n"); \
+    croak("reference does not point to array any more\n"); \
   } \
   SvGETMAGIC(sv); \
   AV* av = (AV*)SvRV(sv); \
   int my_last = av_top_index(av); \
   if(my_last != (NUMBER-1)) { \
-    Perl_croak("color3f array must be %d-valued array of floats, while provided: %d\n", NUMBER, my_last); \
+	  Perl_croak("%s array must be %d-valued array of floats, while provided: %d\n", #NAME, NUMBER, my_last); \
   } \
-  float* values = (float*) value; \
+  TYPE* values = (TYPE*) value; \
   int i; \
   for(i = 0; i <= my_last; i++) { \
     SV** element = av_fetch(av, i, 0); \
@@ -239,19 +239,19 @@ void _color##NUMBER##f_getter(void* value, void* data) { \
   } \
 };
 
-#define COLOR_CALLBACK_SETTER(NUMBER) \
-void _color##NUMBER##f_setter(void* value, void* data) { \
+#define DOUBLE_CALLBACK_SETTER(NAME, NUMBER, TYPE)	 \
+void NAME(void* value, void* data) { \
   SV* sv = SvRV((SV*) data); \
   if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){ \
-    croak("color reference does not points to array any more\n"); \
+    croak("reference does not point to array any more\n"); \
   } \
   SvGETMAGIC(sv); \
   AV* av = (AV*)SvRV(sv); \
   int my_last = av_top_index(av); \
   if(my_last != (NUMBER-1)) { \
-    Perl_croak("color3f array must be %d-valued array of floats, while provided: %d\n", NUMBER, my_last); \
+	  Perl_croak("%s array must be %d-valued array of floats, while provided: %d\n", #NAME, NUMBER, my_last); \
   } \
-  float* values = (float*) value; \
+  TYPE* values = (TYPE*) value; \
   int i; \
   for(i = 0; i <= my_last; i++) { \
     SV** element = av_fetch(av, i, 0); \
@@ -264,10 +264,14 @@ void _color##NUMBER##f_setter(void* value, void* data) { \
   } \
 };
 
-COLOR_CALLBACK_GETTER(3);
-COLOR_CALLBACK_SETTER(3);
-COLOR_CALLBACK_GETTER(4);
-COLOR_CALLBACK_SETTER(4);
+DOUBLE_CALLBACK_GETTER(_color3f_getter, 3, float);
+DOUBLE_CALLBACK_SETTER(_color3f_setter, 3, float);
+DOUBLE_CALLBACK_GETTER(_color4f_getter, 4, float);
+DOUBLE_CALLBACK_SETTER(_color4f_setter, 4, float);
+DOUBLE_CALLBACK_GETTER(_dir3d_getter, 3, double);
+DOUBLE_CALLBACK_SETTER(_dir3d_setter, 3, double);
+DOUBLE_CALLBACK_GETTER(_quat4d_getter, 4, double);
+DOUBLE_CALLBACK_SETTER(_quat4d_setter, 4, double);
 
 MODULE = AntTweakBar		PACKAGE = AntTweakBar
 
@@ -291,6 +295,8 @@ BOOT:
   ADD_TYPE(string, TW_TYPE_CDSTRING, _string_getter, _string_setter);
   ADD_TYPE(color3f, TW_TYPE_COLOR3F, _color3f_getter, _color3f_setter);
   ADD_TYPE(color4f, TW_TYPE_COLOR4F, _color4f_getter, _color4f_setter);
+  ADD_TYPE(direction, TW_TYPE_DIR3D, _dir3d_getter, _dir3d_setter);
+  ADD_TYPE(quaternion, TW_TYPE_QUAT4D, _quat4d_getter, _quat4d_setter);
 }
 
 void

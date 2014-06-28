@@ -49,7 +49,7 @@ glutKeyboardFunc(\&AntTweakBar::eventKeyboardGLUT);
 glutSpecialFunc(\&AntTweakBar::eventSpecialGLUT);
 AntTweakBar::GLUTModifiersFunc(\&glutGetModifiers);
 
-reshape(640, 480);
+reshape(640, 750);
 my $bar = AntTweakBar->new("TweakBar & Perl");
 $bar->add_separator("x-sep");
 
@@ -65,6 +65,11 @@ my $color3f_ro = [1.0, 1.0, 0.0];
 my $color3f_rw = [0.5, 0.5, 1.0];
 my $color4f_ro = [1.0, 1.0, 0.0, 0.1];
 my $color4f_rw = [0.5, 0.5, 1.0, 0.2];
+my $direction_ro = [1.0, 0.0, 0.0];
+my $direction_rw = [0.0, 0.0, 1.0];
+my $quaternion_ro = [1.0, 0.1, 0.0, 0.0];
+my $quaternion_rw = [0.0, 1.0, 1.1, 0.0];
+
 
 # types: bool, integer, number, string, color3f, color4f, direction, quaternion, custom enums
 $bar->add_variable(
@@ -146,6 +151,30 @@ $bar->add_variable(
     type       => 'color4f',
     value      => \$color4f_rw,
 );
+$bar->add_variable(
+    mode       => 'ro',
+    name       => "direction_ro",
+    type       => 'direction',
+    value      => \$direction_ro,
+);
+$bar->add_variable(
+    mode       => 'rw',
+    name       => "direction_rw",
+    type       => 'direction',
+    value      => \$direction_rw,
+);
+$bar->add_variable(
+    mode       => 'ro',
+    name       => "quaternion_ro",
+    type       => 'quaternion',
+    value      => \$quaternion_ro,
+);
+$bar->add_variable(
+    mode       => 'rw',
+    name       => "quaternion_rw",
+    type       => 'quaternion',
+    value      => \$quaternion_rw,
+);
 
 $bar->add_button(
     name       => "my-btn-name",
@@ -156,6 +185,8 @@ $bar->add_button(
         say "string_ro=$string_ro, string_rw=$string_rw";
         say "color3f_ro=", dump($color3f_ro), ", color3f_rw=", dump($color3f_rw);
         say "color4f_ro=", dump($color4f_ro), ", color4f_rw=", dump($color4f_rw);
+        say "direction_ro=", dump($direction_ro), ", direction_rw=", dump($direction_rw);
+        say "quaternion_ro=", dump($quaternion_ro), ", quaternion_rw=", dump($quaternion_rw);
     },
     definition => "label='dump'",
 );

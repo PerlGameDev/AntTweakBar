@@ -9,12 +9,14 @@ $ENV{ANTTWEAKBAR_DISABLE_LIB} = 1;
 
 subtest "types creation checking" => sub {
     my %type_for = (
-        bool    => 1,
-        integer => 2,
-        number  => 3.14,
-        string  => "abc",
-        color3f => [1, 2, 3],
-        color4f => [0.1, 0.2, 0.3, 0.4],
+        bool       => 1,
+        integer    => 2,
+        number     => 3.14,
+        string     => "abc",
+        color3f    => [1, 2, 3],
+        color4f    => [0.1, 0.2, 0.3, 0.4],
+        direction  => [0, 1, -1],
+        quaternion => [1, 2, 3, 4],
     );
     my $bar = AntTweakBar->new("TweakBar");
     for my $type (keys %type_for) {
