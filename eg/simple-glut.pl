@@ -226,7 +226,7 @@ $bar->add_button(
 );
 $bar->add_separator("separator2");
 $bar->add_button(
-    name => "remove quaternions",
+    name => "remove quaternions & refresh",
     cb   => sub {
         if ($quaternion_ro) {
             $bar->remove_variable('quaternion_ro');
@@ -236,6 +236,7 @@ $bar->add_button(
             $bar->remove_variable('quaternion_rw');
             $quaternion_rw = undef;
         }
+        $bar->refresh;
     }
 );
 

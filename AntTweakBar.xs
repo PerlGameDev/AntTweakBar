@@ -6,6 +6,7 @@
 #include "ppport.h"
 
 #include "AntTweakBar.h"
+#include "SDL.h"
 
 #define CONSTANT(NAME) newCONSTSUB(stash, #NAME, newSViv((int)NAME))
 
@@ -118,6 +119,10 @@ int eventSpecialGLUT(int key, int mouseX, int mouseY) {
   return TwEventSpecialGLUT(key, mouseX, mouseY);
 }
 
+int eventSDL(SDL_Event* event){
+  return TwEventSDL(event, SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+}
+
 int _modifiers_callback_bridge(){
   if(!_modifiers_callback){
     croak("internal error: no _modifiers_callback\n");
@@ -220,6 +225,13 @@ TwType _register_enum(const char* name, SV* hash_ref){
   _add_type(name, new_type, _int_getter, _int_setter);
   free(enum_values);
   return new_type;
+}
+
+
+void _refresh(TwBar* bar){
+  int result = TwRefreshBar(bar);
+  if(!result)
+    Perl_croak("Refreshing error: %s", TwGetLastError());
 }
 
 /* CALLBACKS */
@@ -431,6 +443,11 @@ GLUTModifiersFunc(callback)
   SV* callback
   PROTOTYPE: $
 
+int
+eventSDL(event)
+ SDL_Event* event
+ PROTOTYPE: $
+
 void
 _add_variable(bar, mode, name, type, value, definition)
   TwBar* bar
@@ -452,3 +469,9 @@ _register_enum(name, hash_ref)
   const char* name
   SV* hash_ref
   PROTOTYPE: $$
+
+
+void
+_refresh(bar)
+  TwBar* bar
+  PROTOTYPE: $

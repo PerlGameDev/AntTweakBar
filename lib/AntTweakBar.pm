@@ -99,6 +99,10 @@ sub remove_variable {
     _remove_variable($self->{_bar_ptr}, $name);
 }
 
+sub refresh {
+    my $self = shift;
+    _refresh($self->{_bar_ptr});
+}
 
 # Preloaded methods go here.
 

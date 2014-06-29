@@ -7,6 +7,8 @@ my $tw = Alien::AntTweakBar->new;
 my $inc = $tw->cflags;
 my $libs = $tw->libs;
 
+my $inc_sdl = `pkg-config --cflags sdl`;
+
 print "using libs: $libs\n";
 
 WriteMakefile(
@@ -18,7 +20,7 @@ WriteMakefile(
     LICENSE           => 'perl',
     LIBS              => $libs, # e.g., '-lm'
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
-    INC               => "-I. $inc",
+    INC               => "-I. $inc $inc_sdl",
 	# Un-comment this if you add C files to link with later:
     # OBJECT            => '$(O_FILES)', # link all the C files too
 );
