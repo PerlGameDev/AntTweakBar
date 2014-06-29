@@ -4,6 +4,7 @@ use OpenGL qw/:all/;
 use AntTweakBar qw/:all/;
 use AntTweakBar::Type;
 use Data::Dump qw/dump/;
+use Variable::Magic qw/cast wizard/;
 
 sub display {
     glClearColor(0, 0, 0, 1);
@@ -77,6 +78,13 @@ my $quaternion_ro = [1.0, 0.1, 0.0, 0.0];
 my $quaternion_rw = [0.0, 1.0, 1.1, 0.0];
 my $custom_ro     = "a";
 my $custom_rw     = undef;
+my $magic_var_rw  = 1.234;
+
+my $wizzard = wizard(
+    set => sub { say "set magic to ", ${$_[0]} },
+);
+
+cast $magic_var_rw, $wizzard;
 
 # types: bool, integer, number, string, color3f, color4f, direction, quaternion, custom enums
 $bar->add_variable(
@@ -190,9 +198,15 @@ $bar->add_variable(
 );
 $bar->add_variable(
     mode       => 'rw',
-    name       => "custom_array_rs",
+    name       => "custom_array_rw",
     type       => $custom_type,
     value      => \$custom_rw,
+);
+$bar->add_variable(
+    mode       => 'rw',
+    name       => "magic_var_rw",
+    type       => "number",
+    value      => \$magic_var_rw,
 );
 
 $bar->add_button(
