@@ -52,6 +52,7 @@ glutSpecialFunc(\&AntTweakBar::eventSpecialGLUT);
 AntTweakBar::GLUTModifiersFunc(\&glutGetModifiers);
 
 reshape(640, 750);
+
 my $bar = AntTweakBar->new("TweakBar & Perl", color => '0 128 0', alpha => 200);
 $bar->add_separator("x-sep");
 
@@ -239,6 +240,18 @@ $bar->add_button(
         $bar->set_bar_params(size => '300 600', valueswidth => '200');
         $bar->refresh;
     }
+);
+
+
+my $b2 = AntTweakBar->new("Perl callbacks");
+$b2->add_variable(
+    mode       => 'ro',
+    name       => "bool_ro_cb",
+    type       => 'bool',
+    cb_read    => sub {
+        say "hello from bool_ro_cb!";
+            14
+    },
 );
 
 glutMainLoop;

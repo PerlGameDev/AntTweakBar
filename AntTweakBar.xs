@@ -17,6 +17,9 @@ static HV * _btn_callback_mapping = NULL;
 static HV * _type_map = NULL;
 static HV * _getters_map = NULL;
 static HV * _setters_map = NULL;
+static HV * _cb_marker_map = NULL;
+static HV * _cb_read_map = NULL;
+static HV * _cb_write_map = NULL;
 static HV * _sv_copy_names = NULL;
 static SV* _modifiers_callback = NULL;
 
@@ -148,7 +151,8 @@ int GLUTModifiersFunc(SV* callback){
 }
 
 void _add_variable(TwBar* bar, const char* mode, const char* name,
-		   const char* type, SV* value_ref, const char* definition) {
+		   const char* type, SV* value_ref,
+		   SV* cb_read, SV* cb_write, const char* definition) {
   SV** sv_type_ref = hv_fetch(_type_map, type, strlen(type), 0);
   TwType tw_type = 0;
   if(sv_type_ref) {
@@ -169,20 +173,36 @@ void _add_variable(TwBar* bar, const char* mode, const char* name,
     tw_setter = (TwSetVarCallback) INT2PTR(IV, iv_setter);
   }
 
-  SV* value_copy = newSVsv(value_ref);
-  hv_store(_sv_copy_names, name, strlen(name), value_copy, 0);
+  SV* cb_or_value;
+  if(SvOK(value_ref) && SvROK(value_ref)){
+    cb_or_value = newSVsv(value_ref);
+    hv_store(_sv_copy_names, name, strlen(name), cb_or_value, 0);
+  } else {
+    cb_or_value = newSVpv(name, 0);
+    hv_store(_cb_marker_map, name, strlen(name), cb_or_value, 0);
+    hv_store(_cb_read_map, (char*)cb_or_value, sizeof(SV*), newSVsv(cb_read), 0);
+    if(SvROK(cb_write))
+      hv_store(_cb_write_map, (char*)cb_or_value, sizeof(SV*), newSVsv(cb_write), 0);
+  }
   if(_disabled_lib_mode()) return;
-  int result = TwAddVarCB(bar, name, tw_type, tw_setter, tw_getter, value_copy, definition);
+  int result = TwAddVarCB(bar, name, tw_type, tw_setter, tw_getter,
+			  cb_or_value, definition);
   if(!result){
     hv_delete(_sv_copy_names, name, strlen(name), 0);
+    hv_delete(_cb_marker_map, name, strlen(name), 0);
     Perl_croak("Variable addition error: %s", TwGetLastError());
   }
 }
 
 void _remove_variable(TwBar* bar, const char* name) {
-  SV* value_copy = hv_delete(_sv_copy_names, name, strlen(name), 0);
-  if(!value_copy) {
-    Perl_croak("No variable with name: %s", name);
+  SV* cb_or_value =
+	  hv_exists(_sv_copy_names, name, strlen(name))
+	  ? hv_delete(_sv_copy_names, name, strlen(name), 0)
+	  : hv_exists(_cb_marker_map, name, strlen(name))
+	  ? hv_delete(_cb_marker_map, name, strlen(name), 0)
+	  : NULL;
+  if(!cb_or_value) {
+    Perl_croak("No variable with name '%s'", name);
   }
   if(_disabled_lib_mode()) return;
   int result = TwRemoveVar(bar, name);
@@ -244,9 +264,23 @@ void _set_bar_parameter(TwBar* bar, const char* param_name, const char* param_va
 /* int/bool callbacks */
 
 void _int_getter(void* value, void* data){
-  SV* sv = SvRV((SV*) data);
-  SvGETMAGIC(sv);
-  int iv = SvIV(sv);
+  int iv;
+  SV* marker = (SV*)data;
+  if(hv_exists(_cb_read_map, (char*) marker, sizeof(SV*))){
+    SV** cb = hv_fetch(_cb_read_map, (char*) data, sizeof(SV*), 0);
+    dSP;
+    PUSHMARK(SP);
+    int count = call_sv(*cb, G_NOARGS|G_SCALAR);
+    SPAGAIN;
+    if (count != 1)
+      Perl_croak("Expected 1 arg to be returned from _int_getter \n");
+    iv = POPi;
+    PUTBACK;
+  } else {
+    SV* sv = SvRV(marker);
+    SvGETMAGIC(sv);
+    iv = SvIV(sv);
+  }
   *(int*)value = iv;
 }
 
@@ -362,6 +396,9 @@ BOOT:
   _getters_map = newHV();
   _setters_map = newHV();
   _sv_copy_names = newHV();
+  _cb_read_map = newHV();
+  _cb_write_map = newHV();
+  _cb_marker_map = newHV();
 
   _add_type("bool", TW_TYPE_BOOL32, _int_getter, _int_setter);
   _add_type("integer", TW_TYPE_INT32,  _int_getter, _int_setter);
@@ -455,14 +492,16 @@ eventSDL(event)
  PROTOTYPE: $
 
 void
-_add_variable(bar, mode, name, type, value, definition)
+_add_variable(bar, mode, name, type, value, cb_read, cb_write, definition)
   TwBar* bar
   const char* mode
   const char* name
   const char* type
   SV* value
+  SV* cb_read
+  SV* cb_write
   const char* definition
-  PROTOTYPE: $$$$$$
+  PROTOTYPE: $$$$$$$$
 
 void
 _remove_variable(bar, name)

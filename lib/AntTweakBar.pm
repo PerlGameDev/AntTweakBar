@@ -80,7 +80,7 @@ sub add_separator {
 sub add_variable {
     my ($self, %args) = @_;
 
-    for (qw/mode name type value/) {
+    for (qw/mode name type/) {
         croak "'$_' is mandatory argument for add_variable"
             unless exists $args{$_};
     }
@@ -89,13 +89,20 @@ sub add_variable {
     my $name       = $args{name      };
     my $type       = $args{type      };
     my $value      = $args{value     };
+    my $cb_read    = $args{cb_read   };
+    my $cb_write   = $args{cb_write  };
     my $definition = $args{definition} // "";
 
+    croak "Either value or callbacks should be specified"
+        if ($value && ($cb_read || $cb_write));
+    croak "cb_read is mandatory when value isn't specied"
+        if (!$value && !$cb_read);
     croak "value should be a reference"
-        unless ref($value);
+        if ($value && !ref($value));
     $type = $type->name if(ref($type) eq 'AntTweakBar::Type');
 
-    _add_variable($self->{_bar_ptr}, $mode, $name, $type, $value, $definition);
+    _add_variable($self->{_bar_ptr}, $mode, $name, $type, $value,
+                  $cb_read, $cb_write, $definition);
 }
 
 sub remove_variable {

@@ -18,6 +18,7 @@ WriteMakefile(
     ABSTRACT_FROM     => 'lib/AntTweakBar.pm', # retrieve abstract from module
     AUTHOR            => 'Ivan Baidakou <dmol@gmx.com>',
     LICENSE           => 'perl',
+    CCFLAGS           => '-g',
     LIBS              => $libs, # e.g., '-lm'
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
     INC               => "-I. $inc $inc_sdl",

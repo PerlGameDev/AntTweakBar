@@ -38,6 +38,24 @@ subtest "types creation checking" => sub {
         $bar->remove_variable("${type}_rw");
         $bar->remove_variable("${type}_ro");
         pass "type $type variables seems to be removed";
+
+        $bar->add_variable(
+            mode       => 'ro',
+            name       => "${type}_ro_cb",
+            type       => $type,
+            cb_read    => sub { $ro },
+        );
+        $bar->add_variable(
+            mode       => 'rw',
+            name       => "${type}_rw_cb",
+            type       => $type,
+            cb_read    => sub { $ro },
+            cb_write   => sub { $ro = @_[0] },
+        );
+        pass "type $type variables seems to be added (cb version)";
+        $bar->remove_variable("${type}_ro_cb");
+        $bar->remove_variable("${type}_rw_cb");
+        pass "type $type variables seems to be removed (cb version))";
     }
 };
 
