@@ -227,11 +227,17 @@ TwType _register_enum(const char* name, SV* hash_ref){
   return new_type;
 }
 
-
 void _refresh(TwBar* bar){
   int result = TwRefreshBar(bar);
   if(!result)
     Perl_croak("Refreshing error: %s", TwGetLastError());
+}
+
+void _set_bar_parameter(TwBar* bar, const char* param_name, const char* param_value) {
+  int result = TwSetParam(bar, NULL, param_name, TW_PARAM_CSTRING, 1, param_value);
+  if(!result)
+    Perl_croak("Error applying value '%s' to parameter %s : %s",
+	       param_value, param_name, TwGetLastError());
 }
 
 /* CALLBACKS */
@@ -470,8 +476,14 @@ _register_enum(name, hash_ref)
   SV* hash_ref
   PROTOTYPE: $$
 
-
 void
 _refresh(bar)
   TwBar* bar
   PROTOTYPE: $
+
+void
+_set_bar_parameter(bar, param_name, param_value)
+  TwBar* bar
+  const char* param_name
+  const char* param_value
+  PROTOTYPE: $$$

@@ -35,12 +35,16 @@ require XSLoader;
 XSLoader::load('AntTweakBar', $VERSION);
 
 sub new {
-    my ($class, $name) = @_;
+    my ($class, $name, %bar_params) = @_;
     croak "AntTweakBar name should be specified"
         unless defined $name;
-    my $self = {};
-    $self->{_bar_ptr} = _create( $name );
-    return bless $self => $class;
+    my $self = {
+        _name    => $name,
+        _bar_ptr => _create( $name ),
+    };
+    bless $self => $class;
+    $self->set_bar_params(%bar_params);
+    return $self;
 }
 
 sub DESTROY {
@@ -102,6 +106,13 @@ sub remove_variable {
 sub refresh {
     my $self = shift;
     _refresh($self->{_bar_ptr});
+}
+
+sub set_bar_params {
+    my ($self, %params) = @_;
+    while (my ($k, $v) = each(%params)) {
+        _set_bar_parameter($self->{_bar_ptr}, $k, $v);
+    }
 }
 
 # Preloaded methods go here.

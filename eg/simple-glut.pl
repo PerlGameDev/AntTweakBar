@@ -52,7 +52,7 @@ glutSpecialFunc(\&AntTweakBar::eventSpecialGLUT);
 AntTweakBar::GLUTModifiersFunc(\&glutGetModifiers);
 
 reshape(640, 750);
-my $bar = AntTweakBar->new("TweakBar & Perl");
+my $bar = AntTweakBar->new("TweakBar & Perl", color => '0 128 0', alpha => 200);
 $bar->add_separator("x-sep");
 
 my $custom_type = AntTweakBar::Type->new(
@@ -236,6 +236,7 @@ $bar->add_button(
             $bar->remove_variable('quaternion_rw');
             $quaternion_rw = undef;
         }
+        $bar->set_bar_params(size => '300 600', valueswidth => '200');
         $bar->refresh;
     }
 );
