@@ -242,16 +242,112 @@ $bar->add_button(
     }
 );
 
-
+my $bool = 1;
+my $double = 0.33;
+my $string = "bla-bla";
+my $color3f = [1.0, 0.2, 0.4];
+my $color4f = [0.0, 0.2, 0.4, 1.0];
+my $direction = [1.0, 0.2, 0.4];
+my $quaternion = [0.1, 0.2, 0.4, 1.0];
+my $custom_idx = 0;
 my $b2 = AntTweakBar->new("Perl callbacks");
 $b2->add_variable(
     mode       => 'ro',
     name       => "bool_ro_cb",
     type       => 'bool',
     cb_read    => sub {
-        say "hello from bool_ro_cb!";
-            14
+        say "hello from bool_ro_cb!, bool = $bool";
+        $bool;
     },
+);
+$b2->add_variable(
+    mode       => 'rw',
+    name       => "bool_rw_cb",
+    type       => 'bool',
+    cb_read    => sub { $bool; },
+    cb_write   => sub {
+        $bool = shift;
+        say "writing value $bool";
+    }
+);
+$b2->add_variable(
+    mode       => 'ro',
+    name       => "number_ro_cb",
+    type       => 'number',
+    cb_read    => sub {
+        say "returning double value $double";
+        $double;
+    },
+);
+$b2->add_variable(
+    mode       => 'rw',
+    name       => "number_rw_cb",
+    type       => 'number',
+    cb_read    => sub { $double },
+    cb_write   => sub { $double = shift; },
+);
+$b2->add_variable(
+    mode       => 'ro',
+    name       => "string_ro_cb",
+    type       => 'string',
+    cb_read    => sub { $string },
+);
+$b2->add_variable(
+    mode       => 'rw',
+    name       => "string_rw_cb",
+    type       => 'string',
+    cb_read    => sub { $string },
+    cb_write   => sub { $string = shift; },
+);
+$b2->add_variable(
+    mode       => 'ro',
+    name       => "color3f_ro_cb",
+    type       => 'color3f',
+    cb_read    => sub { $color3f },
+);
+$b2->add_variable(
+    mode       => 'rw',
+    name       => "color3f_rw_cb",
+    type       => 'color3f',
+    cb_read    => sub { $color3f },
+    cb_write   => sub {
+        @$color3f = @{$_[0]};
+        say "now color3f = " . dump($color3f);
+    },
+);
+$b2->add_variable(
+    mode       => 'rw',
+    name       => "color4f_rw_cb",
+    type       => 'color4f',
+    cb_read    => sub { $color4f },
+    cb_write   => sub { @$color4f = @{$_[0]} },
+);
+$b2->add_variable(
+    mode       => 'rw',
+    name       => "direction_rw_cb",
+    type       => 'direction',
+    cb_read    => sub { $direction },
+    cb_write   => sub { @$direction = @{$_[0]} },
+);
+$b2->add_variable(
+    mode       => 'rw',
+    name       => "quaternion_rw_cb",
+    type       => 'quaternion',
+    cb_read    => sub { $quaternion },
+    cb_write   => sub { @$quaternion = @{$_[0]} },
+);
+$b2->add_variable(
+    mode       => 'rw',
+    name       => "custom_idx_ro_cb",
+    type       => $custom_type,
+    cb_read    => sub { $custom_idx },
+);
+$b2->add_variable(
+    mode       => 'rw',
+    name       => "custom_idx_rw_cb",
+    type       => $custom_type,
+    cb_read    => sub { $custom_idx },
+    cb_write   => sub { $custom_idx = shift },
 );
 
 glutMainLoop;

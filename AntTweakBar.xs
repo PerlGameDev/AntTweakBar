@@ -12,11 +12,15 @@
 
 void _int_getter(void* value, void* data);
 void _int_setter(const void* value, void* data);
+void _int_getter_cb(void* value, void* data);
+void _int_setter_cb(const void* value, void* data);
 
 static HV * _btn_callback_mapping = NULL;
 static HV * _type_map = NULL;
 static HV * _getters_map = NULL;
 static HV * _setters_map = NULL;
+static HV * _getters_cb_map = NULL;
+static HV * _setters_cb_map = NULL;
 static HV * _cb_marker_map = NULL;
 static HV * _cb_read_map = NULL;
 static HV * _cb_write_map = NULL;
@@ -24,10 +28,13 @@ static HV * _sv_copy_names = NULL;
 static SV* _modifiers_callback = NULL;
 
 static void _add_type(const char* name, TwType type,
-		      TwGetVarCallback getter, TwSetVarCallback setter) {
+		      TwGetVarCallback getter, TwSetVarCallback setter,
+		      TwGetVarCallback getter_cb, TwSetVarCallback setter_cb) {
   hv_store(_type_map, name, strlen(name), newSViv(type), 0);
   hv_store(_getters_map, name, strlen(name), newSViv(PTR2IV(getter)), 0);
   hv_store(_setters_map, name, strlen(name), newSViv(PTR2IV(setter)), 0);
+  hv_store(_getters_cb_map, name, strlen(name), newSViv(PTR2IV(getter_cb)), 0);
+  hv_store(_setters_cb_map, name, strlen(name), newSViv(PTR2IV(setter_cb)), 0);
 }
 
 int _disabled_lib_mode() {
@@ -162,28 +169,37 @@ void _add_variable(TwBar* bar, const char* mode, const char* name,
     Perl_croak("Undefined var type: %s", type);
   }
 
-  SV** getter_ref = hv_fetch(_getters_map, type, strlen(type), 0);
-  IV  iv_getter = SvIV(*getter_ref);
-  TwGetVarCallback tw_getter = (TwGetVarCallback) INT2PTR(IV, iv_getter);
-
-  TwSetVarCallback tw_setter = NULL;
-  if(strcmp(mode, "rw") == 0) {
-    SV** getter_ref = hv_fetch(_setters_map, type, strlen(type), 0);
-    IV  iv_setter = SvIV(*getter_ref);
-    tw_setter = (TwSetVarCallback) INT2PTR(IV, iv_setter);
-  }
+  SV** getter_ref;
+  SV** setter_ref = NULL;
 
   SV* cb_or_value;
   if(SvOK(value_ref) && SvROK(value_ref)){
     cb_or_value = newSVsv(value_ref);
+    getter_ref = hv_fetch(_getters_map, type, strlen(type), 0);
     hv_store(_sv_copy_names, name, strlen(name), cb_or_value, 0);
+    if(strcmp(mode, "rw") == 0) {
+      setter_ref = hv_fetch(_setters_map, type, strlen(type), 0);
+    }
   } else {
     cb_or_value = newSVpv(name, 0);
+    getter_ref = hv_fetch(_getters_cb_map, type, strlen(type), 0);
+    if(strcmp(mode, "rw") == 0) {
+      setter_ref = hv_fetch(_setters_cb_map, type, strlen(type), 0);
+    }
     hv_store(_cb_marker_map, name, strlen(name), cb_or_value, 0);
     hv_store(_cb_read_map, (char*)cb_or_value, sizeof(SV*), newSVsv(cb_read), 0);
     if(SvROK(cb_write))
       hv_store(_cb_write_map, (char*)cb_or_value, sizeof(SV*), newSVsv(cb_write), 0);
   }
+
+  IV iv_getter = SvIV(*getter_ref);
+  TwGetVarCallback tw_getter = (TwGetVarCallback) INT2PTR(IV, iv_getter);
+  TwSetVarCallback tw_setter = NULL;
+  if(setter_ref) {
+    IV iv_setter = SvIV(*setter_ref);
+    tw_setter = (TwSetVarCallback) INT2PTR(IV, iv_setter);
+  }
+
   if(_disabled_lib_mode()) return;
   int result = TwAddVarCB(bar, name, tw_type, tw_setter, tw_getter,
 			  cb_or_value, definition);
@@ -242,7 +258,7 @@ TwType _register_enum(const char* name, SV* hash_ref){
   TwType new_type = !_disabled_lib_mode()
     ? TwDefineEnum(name, enum_values, total_keys)
     : 0;
-  _add_type(name, new_type, _int_getter, _int_setter);
+  _add_type(name, new_type, _int_getter, _int_setter, _int_getter_cb, _int_setter_cb);
   free(enum_values);
   return new_type;
 }
@@ -264,30 +280,40 @@ void _set_bar_parameter(TwBar* bar, const char* param_name, const char* param_va
 /* int/bool callbacks */
 
 void _int_getter(void* value, void* data){
-  int iv;
-  SV* marker = (SV*)data;
-  if(hv_exists(_cb_read_map, (char*) marker, sizeof(SV*))){
-    SV** cb = hv_fetch(_cb_read_map, (char*) data, sizeof(SV*), 0);
-    dSP;
-    PUSHMARK(SP);
-    int count = call_sv(*cb, G_NOARGS|G_SCALAR);
-    SPAGAIN;
-    if (count != 1)
-      Perl_croak("Expected 1 arg to be returned from _int_getter \n");
-    iv = POPi;
-    PUTBACK;
-  } else {
-    SV* sv = SvRV(marker);
-    SvGETMAGIC(sv);
-    iv = SvIV(sv);
-  }
+  SV* sv = SvRV((SV*) data);
+  SvGETMAGIC(sv);
+  int iv = SvIV(sv);
   *(int*)value = iv;
+}
+
+void _int_getter_cb(void* value, void* data){
+  SV** cb = hv_fetch(_cb_read_map, (char*) data, sizeof(SV*), 0);
+  dSP;
+  PUSHMARK(SP);
+  int count = call_sv(*cb, G_NOARGS|G_SCALAR);
+  SPAGAIN;
+  if (count != 1)
+    Perl_croak("Expected 1 arg to be returned from _int_getter \n");
+  *(int*)value = POPi;
 }
 
 void _int_setter(const void* value, void* data){
   SV* sv = SvRV((SV*) data);
   sv_setiv(sv, *(int*)value );
   SvSETMAGIC(sv);
+}
+
+void _int_setter_cb(const void* value, void* data){
+  SV** cb = hv_fetch(_cb_write_map, (char*) data, sizeof(SV*), 0);
+  dSP;
+  ENTER;
+  SAVETMPS;
+  PUSHMARK(SP);
+  XPUSHs(sv_2mortal(newSViv(*(int*)value)));
+  PUTBACK;
+    call_sv(*cb, G_DISCARD);
+  FREETMPS;
+  LEAVE;
 }
 
 /* number(double) callbacks */
@@ -305,6 +331,30 @@ void _number_setter(const void* value, void* data){
   SvSETMAGIC(sv);
 }
 
+void _number_getter_cb(void* value, void* data){
+  SV** cb = hv_fetch(_cb_read_map, (char*) data, sizeof(SV*), 0);
+  dSP;
+  PUSHMARK(SP);
+  int count = call_sv(*cb, G_NOARGS|G_SCALAR);
+  SPAGAIN;
+  if (count != 1)
+    Perl_croak("Expected 1 arg to be returned from _number_getter_cb \n");
+  *(double*)value = POPn;
+}
+
+void _number_setter_cb(const void* value, void* data){
+  SV** cb = hv_fetch(_cb_write_map, (char*) data, sizeof(SV*), 0);
+  dSP;
+  ENTER;
+  SAVETMPS;
+  PUSHMARK(SP);
+  XPUSHs(sv_2mortal(newSVnv(*(double*)value)));
+  PUTBACK;
+    call_sv(*cb, G_DISCARD);
+  FREETMPS;
+  LEAVE;
+}
+
 /* string callbacks */
 
 void _string_getter(void* value, void* data){
@@ -312,6 +362,21 @@ void _string_getter(void* value, void* data){
   SvGETMAGIC(sv);
   const char* string = SvPV_nolen(sv);
   *(const char**)value = string;
+}
+
+void _string_getter_cb(void* value, void* data){
+  SV** cb = hv_fetch(_cb_read_map, (char*) data, sizeof(SV*), 0);
+  dSP;
+  PUSHMARK(SP);
+  int count = call_sv(*cb, G_NOARGS|G_SCALAR);
+  SPAGAIN;
+  if (count != 1)
+    Perl_croak("Expected 1 arg to be returned from _string_getter_cb \n");
+  SV* sv_string = POPs;
+  if(!SvPOK(sv_string)) {
+    Perl_croak("_string_getter_cb got not a string\n");
+  }
+  *(const char**)value = SvPV_nolen(sv_string);
 }
 
 void _string_setter(const void* value, void* data){
@@ -323,7 +388,21 @@ void _string_setter(const void* value, void* data){
   SvSETMAGIC(sv);
 }
 
+void _string_setter_cb(const void* value, void* data){
+  SV** cb = hv_fetch(_cb_write_map, (char*) data, sizeof(SV*), 0);
+  dSP;
+  ENTER;
+  SAVETMPS;
+  PUSHMARK(SP);
+  XPUSHs(sv_2mortal(newSVpv(*(char**)value, 0)));
+  PUTBACK;
+    call_sv(*cb, G_DISCARD);
+  FREETMPS;
+  LEAVE;
+}
+
 /* double/float array callback generators */
+
 #define DOUBLE_CALLBACK_GETTER(NAME, NUMBER, TYPE)	 \
 void NAME(void* value, void* data) { \
   SV* sv = SvRV((SV*) data); \
@@ -342,7 +421,37 @@ void NAME(void* value, void* data) { \
     SV** element = av_fetch(av, i, 0); \
     if(element && SvNOK(*element)) { \
       SvGETMAGIC(*element); \
-      values[i] = (float)SvNV(*element); \
+      values[i] = (TYPE)SvNV(*element); \
+    } \
+  } \
+};
+
+#define DOUBLE_CALLBACK_GETTER_CB(NAME, NUMBER, TYPE) \
+void NAME(void* value, void* data) { \
+  SV** cb = hv_fetch(_cb_read_map, (char*) data, sizeof(SV*), 0); \
+  dSP; \
+  PUSHMARK(SP); \
+  int count = call_sv(*cb, G_NOARGS|G_SCALAR); \
+  SPAGAIN; \
+  if (count != 1) \
+    Perl_croak("Expected 1 arg to be returned from %s \n", #NAME); \
+  SV* sv = POPs; \
+  if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){ \
+    croak("reference does not point to array any more\n"); \
+  } \
+  SvGETMAGIC(sv); \
+  AV* av = (AV*)SvRV(sv); \
+  int my_last = av_top_index(av); \
+  if(my_last != (NUMBER-1)) { \
+    Perl_croak("%s array must be %d-valued array of floats, while provided: %d\n", #NAME, NUMBER, my_last); \
+  } \
+  TYPE* values = (TYPE*) value; \
+  int i; \
+  for(i = 0; i <= my_last; i++) { \
+    SV** element = av_fetch(av, i, 0); \
+    if(element && SvNOK(*element)) { \
+      SvGETMAGIC(*element); \
+      values[i] = (TYPE)SvNV(*element); \
     } \
   } \
 };
@@ -372,14 +481,47 @@ void NAME(const void* value, void* data) { \
   } \
 };
 
-DOUBLE_CALLBACK_GETTER(_color3f_getter, 3, float);
-DOUBLE_CALLBACK_SETTER(_color3f_setter, 3, float);
-DOUBLE_CALLBACK_GETTER(_color4f_getter, 4, float);
-DOUBLE_CALLBACK_SETTER(_color4f_setter, 4, float);
-DOUBLE_CALLBACK_GETTER(_dir3d_getter, 3, double);
-DOUBLE_CALLBACK_SETTER(_dir3d_setter, 3, double);
-DOUBLE_CALLBACK_GETTER(_quat4d_getter, 4, double);
-DOUBLE_CALLBACK_SETTER(_quat4d_setter, 4, double);
+#define DOUBLE_CALLBACK_SETTER_CB(NAME, NUMBER, TYPE)	 \
+void NAME(const void* value, void* data) { \
+  SV** cb = hv_fetch(_cb_write_map, (char*) data, sizeof(SV*), 0); \
+  dSP; \
+  ENTER; \
+  SAVETMPS; \
+  \
+  AV* av = (AV*)sv_2mortal((SV*)newAV()); \
+  TYPE* values = (TYPE*) value; \
+  int i; \
+  for(i = 0; i < NUMBER; i++) { \
+    av_push(av, newSVnv(values[i])); \
+  } \
+  \
+  PUSHMARK(SP); \
+  XPUSHs(sv_2mortal(newRV_inc((SV*)av))); \
+  PUTBACK; \
+  \
+  call_sv(*cb, G_DISCARD); \
+  \
+  FREETMPS; \
+  LEAVE; \
+};
+
+
+DOUBLE_CALLBACK_GETTER   (_color3f_getter,    3, float);
+DOUBLE_CALLBACK_GETTER_CB(_color3f_getter_cb, 3, float);
+DOUBLE_CALLBACK_SETTER   (_color3f_setter,    3, float);
+DOUBLE_CALLBACK_SETTER_CB(_color3f_setter_cb, 3, float);
+DOUBLE_CALLBACK_GETTER   (_color4f_getter,    4, float);
+DOUBLE_CALLBACK_GETTER_CB(_color4f_getter_cb, 4, float);
+DOUBLE_CALLBACK_SETTER   (_color4f_setter,    4, float);
+DOUBLE_CALLBACK_SETTER_CB(_color4f_setter_cb, 4, float);
+DOUBLE_CALLBACK_GETTER   (_dir3d_getter,      3, double);
+DOUBLE_CALLBACK_GETTER_CB(_dir3d_getter_cb,   3, double);
+DOUBLE_CALLBACK_SETTER   (_dir3d_setter,      3, double);
+DOUBLE_CALLBACK_SETTER_CB(_dir3d_setter_cb,   3, double);
+DOUBLE_CALLBACK_GETTER   (_quat4d_getter,     4, double);
+DOUBLE_CALLBACK_GETTER_CB(_quat4d_getter_cb,  4, double);
+DOUBLE_CALLBACK_SETTER   (_quat4d_setter,     4, double);
+DOUBLE_CALLBACK_SETTER_CB(_quat4d_setter_cb,  4, double);
 
 MODULE = AntTweakBar		PACKAGE = AntTweakBar
 
@@ -395,19 +537,21 @@ BOOT:
   _type_map = newHV();
   _getters_map = newHV();
   _setters_map = newHV();
+  _getters_cb_map = newHV();
+  _setters_cb_map = newHV();
   _sv_copy_names = newHV();
   _cb_read_map = newHV();
   _cb_write_map = newHV();
   _cb_marker_map = newHV();
 
-  _add_type("bool", TW_TYPE_BOOL32, _int_getter, _int_setter);
-  _add_type("integer", TW_TYPE_INT32,  _int_getter, _int_setter);
-  _add_type("number", TW_TYPE_DOUBLE,  _number_getter, _number_setter);
-  _add_type("string", TW_TYPE_CDSTRING, _string_getter, _string_setter);
-  _add_type("color3f", TW_TYPE_COLOR3F, _color3f_getter, _color3f_setter);
-  _add_type("color4f", TW_TYPE_COLOR4F, _color4f_getter, _color4f_setter);
-  _add_type("direction", TW_TYPE_DIR3D, _dir3d_getter, _dir3d_setter);
-  _add_type("quaternion", TW_TYPE_QUAT4D, _quat4d_getter, _quat4d_setter);
+  _add_type("bool", TW_TYPE_BOOL32, _int_getter, _int_setter, _int_getter_cb, _int_setter_cb);
+  _add_type("integer", TW_TYPE_INT32,  _int_getter, _int_setter, _int_getter_cb, _int_setter_cb);
+  _add_type("number", TW_TYPE_DOUBLE,  _number_getter, _number_setter, _number_getter_cb, _number_setter_cb);
+  _add_type("string", TW_TYPE_CDSTRING, _string_getter, _string_setter, _string_getter_cb, _string_setter_cb);
+  _add_type("color3f", TW_TYPE_COLOR3F, _color3f_getter, _color3f_setter, _color3f_getter_cb, _color3f_setter_cb);
+  _add_type("color4f", TW_TYPE_COLOR4F, _color4f_getter, _color4f_setter, _color4f_getter_cb, _color4f_setter_cb);
+  _add_type("direction", TW_TYPE_DIR3D, _dir3d_getter, _dir3d_setter, _dir3d_getter_cb, _dir3d_setter_cb);
+  _add_type("quaternion", TW_TYPE_QUAT4D, _quat4d_getter, _quat4d_setter, _quat4d_getter_cb, _quat4d_setter_cb);
 }
 
 void
