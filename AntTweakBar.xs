@@ -282,7 +282,7 @@ void _set_bar_parameter(TwBar* bar, const char* param_name, const char* param_va
 void _int_getter(void* value, void* data){
   SV* sv = SvRV((SV*) data);
   SvGETMAGIC(sv);
-  int iv = SvIV(sv);
+  int iv = SvOK(sv) ? SvIV(sv) : 0;
   *(int*)value = iv;
 }
 
@@ -294,7 +294,8 @@ void _int_getter_cb(void* value, void* data){
   SPAGAIN;
   if (count != 1)
     Perl_croak("Expected 1 arg to be returned from _int_getter \n");
-  *(int*)value = POPi;
+  SV* sv = POPs;
+  *(int*)value = SvOK(sv) ? SvIV(sv) : 0;
 }
 
 void _int_setter(const void* value, void* data){
@@ -321,7 +322,7 @@ void _int_setter_cb(const void* value, void* data){
 void _number_getter(void* value, void* data){
   SV* sv = SvRV((SV*) data);
   SvGETMAGIC(sv);
-  double dv = SvNV(sv);
+  double dv = SvOK(sv) ? SvNV(sv) : 0.0;
   *(double*)value = dv;
 }
 
@@ -339,7 +340,8 @@ void _number_getter_cb(void* value, void* data){
   SPAGAIN;
   if (count != 1)
     Perl_croak("Expected 1 arg to be returned from _number_getter_cb \n");
-  *(double*)value = POPn;
+  SV* sv = POPs;
+  *(double*)value = SvOK(sv) ? SvNV(sv) : 0.0;
 }
 
 void _number_setter_cb(const void* value, void* data){
@@ -360,7 +362,7 @@ void _number_setter_cb(const void* value, void* data){
 void _string_getter(void* value, void* data){
   SV* sv = SvRV((SV*) data);
   SvGETMAGIC(sv);
-  const char* string = SvPV_nolen(sv);
+  const char* string = SvOK(sv) ? SvPV_nolen(sv) : "";
   *(const char**)value = string;
 }
 

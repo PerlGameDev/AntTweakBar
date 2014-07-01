@@ -62,7 +62,7 @@ my $custom_type = AntTweakBar::Type->new(
 );
 
 my $bool_ro       = 1;
-my $bool_rw       = 0;
+my $bool_rw       = undef;
 my $int_ro        = 100;
 my $int_rw        = 200;
 my $number_ro     = 3.14;
@@ -242,7 +242,7 @@ $bar->add_button(
     }
 );
 
-my $bool = 1;
+my $bool = undef;
 my $double = 0.33;
 my $string = "bla-bla";
 my $color3f = [1.0, 0.2, 0.4];
@@ -257,7 +257,7 @@ $b2->add_variable(
     type       => 'bool',
     cb_read    => sub {
         say "hello from bool_ro_cb!, bool = $bool";
-        $bool;
+        return undef;
     },
 );
 $b2->add_variable(
@@ -337,7 +337,7 @@ $b2->add_variable(
     cb_write   => sub { @$quaternion = @{$_[0]} },
 );
 $b2->add_variable(
-    mode       => 'rw',
+    mode       => 'ro',
     name       => "custom_idx_ro_cb",
     type       => $custom_type,
     cb_read    => sub { $custom_idx },
