@@ -3,6 +3,8 @@
 #include "perl.h"
 #include "XSUB.h"
 
+#define NEED_newCONSTSUB
+#define NEED_sv_2pv_flags
 #include "ppport.h"
 
 #include "AntTweakBar.h"
@@ -228,7 +230,7 @@ void _remove_variable(TwBar* bar, const char* name) {
 
 TwType _register_enum(const char* name, SV* hash_ref){
   if(!SvOK(hash_ref) || !SvROK(hash_ref)){
-    Perl_croak("Hashref cannot be undefined");
+    Perl_croak(aTHX_ "Hashref cannot be undefined");
   }
   HV* hv =(HV*) SvRV(hash_ref);
   HE* entry;
@@ -293,7 +295,7 @@ void _int_getter_cb(void* value, void* data){
   int count = call_sv(*cb, G_NOARGS|G_SCALAR);
   SPAGAIN;
   if (count != 1)
-    Perl_croak("Expected 1 arg to be returned from _int_getter \n");
+    Perl_croak(aTHX_ "Expected 1 arg to be returned from _int_getter \n");
   SV* sv = POPs;
   *(int*)value = SvOK(sv) ? SvIV(sv) : 0;
 }
@@ -339,7 +341,7 @@ void _number_getter_cb(void* value, void* data){
   int count = call_sv(*cb, G_NOARGS|G_SCALAR);
   SPAGAIN;
   if (count != 1)
-    Perl_croak("Expected 1 arg to be returned from _number_getter_cb \n");
+    Perl_croak(aTHX_ "Expected 1 arg to be returned from _number_getter_cb \n");
   SV* sv = POPs;
   *(double*)value = SvOK(sv) ? SvNV(sv) : 0.0;
 }
@@ -373,10 +375,10 @@ void _string_getter_cb(void* value, void* data){
   int count = call_sv(*cb, G_NOARGS|G_SCALAR);
   SPAGAIN;
   if (count != 1)
-    Perl_croak("Expected 1 arg to be returned from _string_getter_cb \n");
+    Perl_croak(aTHX_ "Expected 1 arg to be returned from _string_getter_cb \n");
   SV* sv_string = POPs;
   if(!SvPOK(sv_string)) {
-    Perl_croak("_string_getter_cb got not a string\n");
+    Perl_croak(aTHX_ "_string_getter_cb got not a string\n");
   }
   *(const char**)value = SvPV_nolen(sv_string);
 }
