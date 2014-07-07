@@ -1,11 +1,11 @@
 use 5.020000;
 use ExtUtils::MakeMaker;
 
+
 use Alien::AntTweakBar;
 
-my $tw = Alien::AntTweakBar->new;
-my $inc = $tw->cflags;
-my $libs = $tw->libs;
+my $inc = Alien::AntTweakBar->config('cflags');
+my $libs = Alien::AntTweakBar->config('libs');
 
 my $inc_sdl = `pkg-config --cflags sdl`;
 
