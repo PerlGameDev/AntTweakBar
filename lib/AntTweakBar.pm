@@ -29,7 +29,7 @@ our @EXPORT = qw(
 
 );
 
-our $VERSION = '0.01';
+our $VERSION = '0.01_01';
 
 require XSLoader;
 XSLoader::load('AntTweakBar', $VERSION);

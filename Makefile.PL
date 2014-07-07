@@ -1,6 +1,4 @@
-use 5.020000;
 use ExtUtils::MakeMaker;
-
 
 use Alien::AntTweakBar;
 
@@ -13,9 +11,23 @@ print "using libs: $libs\n";
 
 WriteMakefile(
     NAME              => 'AntTweakBar',
-    VERSION_FROM      => 'lib/AntTweakBar.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
-    PREREQ_PM         => {}, # e.g., Module::Name => 1.1
-    ABSTRACT_FROM     => 'lib/AntTweakBar.pm', # retrieve abstract from module
+    VERSION_FROM      => 'lib/AntTweakBar.pm',
+    ABSTRACT_FROM     => 'lib/AntTweakBar.pm',
+    CONFIGURE_REQUIRES => {
+        'Alien::AntTweakBar'  => 0,
+        'ExtUtils::MakeMaker' => '6.52',
+    },
+    PREREQ_PM         => {
+        'Carp'               => 0,
+        'Exporter'           => 0,
+        'XSLoader'           => 0,
+        'Alien::AntTweakBar' => 0,
+    },
+    TEST_REQUIRES     => {
+        'Test::More'     => 0,
+        'Test::Fatal'    => 0,
+        'Test::Warnings' => 0,
+    },
     AUTHOR            => 'Ivan Baidakou <dmol@gmx.com>',
     LICENSE           => 'perl',
     CCFLAGS           => '-g',
