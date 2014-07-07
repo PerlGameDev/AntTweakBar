@@ -8,7 +8,7 @@ build_requires:
   Test::More: '0'
   Test::Warnings: '0'
 configure_requires:
-  Alien::AntTweakBar: '0'
+  Alien::AntTweakBar: 0.02_06
   ExtUtils::MakeMaker: '6.52'
 dynamic_config: 1
 generated_by: 'ExtUtils::MakeMaker version 6.98, CPAN::Meta::Converter version 2.141520'
@@ -22,7 +22,7 @@ no_index:
     - t
     - inc
 requires:
-  Alien::AntTweakBar: '0'
+  Alien::AntTweakBar: 0.02_06
   Carp: '0'
   Exporter: '0'
   XSLoader: '0'

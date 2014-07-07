@@ -14,14 +14,14 @@ WriteMakefile(
     VERSION_FROM      => 'lib/AntTweakBar.pm',
     ABSTRACT_FROM     => 'lib/AntTweakBar.pm',
     CONFIGURE_REQUIRES => {
-        'Alien::AntTweakBar'  => 0,
+        'Alien::AntTweakBar'  => '0.02_06',
         'ExtUtils::MakeMaker' => '6.52',
     },
     PREREQ_PM         => {
         'Carp'               => 0,
         'Exporter'           => 0,
         'XSLoader'           => 0,
-        'Alien::AntTweakBar' => 0,
+        'Alien::AntTweakBar' => '0.02_06',
     },
     TEST_REQUIRES     => {
         'Test::More'     => 0,
