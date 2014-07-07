@@ -3,10 +3,6 @@
 #include "perl.h"
 #include "XSUB.h"
 
-#define NEED_newCONSTSUB
-#define NEED_sv_2pv_flags
-#include "ppport.h"
-
 #include "AntTweakBar.h"
 #include "SDL.h"
 
@@ -415,10 +411,7 @@ void NAME(void* value, void* data) { \
   } \
   SvGETMAGIC(sv); \
   AV* av = (AV*)SvRV(sv); \
-  int my_last = av_top_index(av); \
-  if(my_last != (NUMBER-1)) { \
-	  Perl_croak("%s array must be %d-valued array of floats, while provided: %d\n", #NAME, NUMBER, my_last); \
-  } \
+  int my_last = (NUMBER-1); \
   TYPE* values = (TYPE*) value; \
   int i; \
   for(i = 0; i <= my_last; i++) { \
@@ -445,10 +438,7 @@ void NAME(void* value, void* data) { \
   } \
   SvGETMAGIC(sv); \
   AV* av = (AV*)SvRV(sv); \
-  int my_last = av_top_index(av); \
-  if(my_last != (NUMBER-1)) { \
-    Perl_croak("%s array must be %d-valued array of floats, while provided: %d\n", #NAME, NUMBER, my_last); \
-  } \
+  int my_last = (NUMBER-1);						\
   TYPE* values = (TYPE*) value; \
   int i; \
   for(i = 0; i <= my_last; i++) { \
@@ -468,10 +458,7 @@ void NAME(const void* value, void* data) { \
   } \
   SvGETMAGIC(sv); \
   AV* av = (AV*)SvRV(sv); \
-  int my_last = av_top_index(av); \
-  if(my_last != (NUMBER-1)) { \
-	  Perl_croak("%s array must be %d-valued array of floats, while provided: %d\n", #NAME, NUMBER, my_last); \
-  } \
+  int my_last = (NUMBER-1); \
   TYPE* values = (TYPE*) value; \
   int i; \
   for(i = 0; i <= my_last; i++) { \
