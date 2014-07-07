@@ -1,5 +1,8 @@
 use 5.12.0;
 
+use strict;
+use warnings;
+
 use Test::Fatal;
 use Test::More;
 use Test::Warnings;
@@ -50,7 +53,7 @@ subtest "types creation checking" => sub {
             name       => "${type}_rw_cb",
             type       => $type,
             cb_read    => sub { $ro },
-            cb_write   => sub { $ro = @_[0] },
+            cb_write   => sub { $ro = $_[0] },
         );
         pass "type $type variables seems to be added (cb version)";
         $bar->remove_variable("${type}_ro_cb");
