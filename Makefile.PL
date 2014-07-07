@@ -28,6 +28,18 @@ WriteMakefile(
         'Test::Fatal'    => 0,
         'Test::Warnings' => 0,
     },
+    META_MERGE        => {
+        "meta-spec" => { version => 2 },
+        resources => {
+            repository => {
+                type => 'git',
+                url => 'git@github.com:basiliscos/p5-anttweakbar.git',
+                web => 'https://github.com/basiliscos/p5-anttweakbar',
+            },
+
+        },
+
+    },
     AUTHOR            => 'Ivan Baidakou <dmol@gmx.com>',
     LICENSE           => 'perl',
     CCFLAGS           => '-g',

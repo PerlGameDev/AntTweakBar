@@ -1,8 +1,14 @@
 AntTweakBar.xs
 Changes
-Makefile.PL
+eg/simple-glut.pl
+lib/AntTweakBar.pm
+lib/AntTweakBar/Type.pm
+LICENSE
 MANIFEST
 ppport.h
 README
+README.md
 t/AntTweakBar.t
-lib/AntTweakBar.pm
+t/init-shutdown.t
+t/vars.t
+typemap

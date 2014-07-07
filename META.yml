@@ -1,0 +1,31 @@
+---
+abstract: 'Perl extension for blah blah blah'
+author:
+  - 'Ivan Baidakou <dmol@gmx.com>'
+build_requires:
+  ExtUtils::MakeMaker: '0'
+  Test::Fatal: '0'
+  Test::More: '0'
+  Test::Warnings: '0'
+configure_requires:
+  Alien::AntTweakBar: '0'
+  ExtUtils::MakeMaker: '6.52'
+dynamic_config: 1
+generated_by: 'ExtUtils::MakeMaker version 6.98, CPAN::Meta::Converter version 2.141520'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: '1.4'
+name: AntTweakBar
+no_index:
+  directory:
+    - t
+    - inc
+requires:
+  Alien::AntTweakBar: '0'
+  Carp: '0'
+  Exporter: '0'
+  XSLoader: '0'
+resources:
+  repository: https://github.com/basiliscos/p5-anttweakbar
+version: 0.01_01
