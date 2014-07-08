@@ -1,7 +1,7 @@
 language: perl
 before_install:
  - sudo apt-get install -qq libsdl1.2-dev
- - cpanm -v D/DM/DMOL/Alien-AntTweakBar-0.02_06.tar.gz
+ - cpanm -v D/DM/DMOL/Alien-AntTweakBar-0.02_07.tar.gz
 
 install: cpanm -v --installdeps --notest .
 
