@@ -9,6 +9,8 @@ build_requires:
   Test::Warnings: '0'
 configure_requires:
   Alien::AntTweakBar: 0.02_06
+  Alien::SDL: '1.444'
+  Devel::CheckLib: '1.01'
   ExtUtils::MakeMaker: '6.52'
 dynamic_config: 1
 generated_by: 'ExtUtils::MakeMaker version 6.98, CPAN::Meta::Converter version 2.141520'

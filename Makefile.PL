@@ -1,13 +1,24 @@
+use strict;
+use warnings;
+
 use ExtUtils::MakeMaker;
+use Devel::CheckLib;
 
 use Alien::AntTweakBar;
+use Alien::SDL;
 
-my $inc = Alien::AntTweakBar->config('cflags');
-my $libs = Alien::AntTweakBar->config('libs');
+check_lib_or_exit( lib => 'GL' );
 
-my $inc_sdl = `pkg-config --cflags sdl`;
+my $atb_inc = Alien::AntTweakBar->config('cflags');
+my $atb_libs = Alien::AntTweakBar->config('libs');
 
-print "using libs: $libs\n";
+my $sdl_inc = Alien::SDL->config('cflags');
+my $sdl_libs = Alien::SDL->config('libs');
+
+my $all_inc = "$atb_inc $sdl_inc";
+my $all_libs = "$atb_libs $sdl_libs -lGL";
+
+print "using libs: $all_libs\n";
 
 WriteMakefile(
     NAME              => 'AntTweakBar',
@@ -15,7 +26,9 @@ WriteMakefile(
     ABSTRACT_FROM     => 'lib/AntTweakBar.pm',
     CONFIGURE_REQUIRES => {
         'Alien::AntTweakBar'  => '0.02_06',
+        'Alien::SDL'          => '1.444',
         'ExtUtils::MakeMaker' => '6.52',
+        'Devel::CheckLib'     => '1.01',
     },
     PREREQ_PM         => {
         'Carp'               => 0,
@@ -43,9 +56,10 @@ WriteMakefile(
     AUTHOR            => 'Ivan Baidakou <dmol@gmx.com>',
     LICENSE           => 'perl',
     CCFLAGS           => '-g',
-    LIBS              => $libs, # e.g., '-lm'
+    LD                => '$(CXX)', # AntTweakBar is compiled via c++
+    LIBS              => $all_libs,
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
-    INC               => "-I. $inc $inc_sdl",
+    INC               => "-I. $all_inc",
 	# Un-comment this if you add C files to link with later:
     # OBJECT            => '$(O_FILES)', # link all the C files too
 );
