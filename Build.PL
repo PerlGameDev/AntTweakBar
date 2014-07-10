@@ -7,7 +7,8 @@ use Devel::CheckLib;
 use Alien::AntTweakBar;
 use Alien::SDL;
 
-check_lib_or_exit( lib => 'GL' );
+my $opengl_lib = $^O eq 'MSWin32' ? 'opengl32' : 'GL';
+check_lib_or_exit( lib => $opengl_lib );
 
 my $atb_inc = Alien::AntTweakBar->config('cflags');
 my $atb_libs = Alien::AntTweakBar->config('libs');
@@ -16,7 +17,7 @@ my $sdl_inc = Alien::SDL->config('cflags');
 my $sdl_libs = Alien::SDL->config('libs');
 
 my $all_inc = "$atb_inc $sdl_inc";
-my $all_libs = "$atb_libs $sdl_libs -lGL";
+my $all_libs = "$atb_libs $sdl_libs -l$opengl_lib";
 
 print "using libs: $all_libs\n";
 

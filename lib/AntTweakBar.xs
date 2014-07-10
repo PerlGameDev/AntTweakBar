@@ -1,3 +1,4 @@
+#define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -7,10 +8,10 @@
 
 #define CONSTANT(NAME) newCONSTSUB(stash, #NAME, newSViv((int)NAME))
 
-void _int_getter(void* value, void* data);
-void _int_setter(const void* value, void* data);
-void _int_getter_cb(void* value, void* data);
-void _int_setter_cb(const void* value, void* data);
+void TW_CALL _int_getter(void* value, void* data);
+void TW_CALL _int_setter(const void* value, void* data);
+void TW_CALL _int_getter_cb(void* value, void* data);
+void TW_CALL _int_setter_cb(const void* value, void* data);
 
 static HV * _btn_callback_mapping = NULL;
 static HV * _type_map = NULL;
@@ -27,6 +28,7 @@ static SV* _modifiers_callback = NULL;
 static void _add_type(const char* name, TwType type,
 		      TwGetVarCallback getter, TwSetVarCallback setter,
 		      TwGetVarCallback getter_cb, TwSetVarCallback setter_cb) {
+  dTHX;
   hv_store(_type_map, name, strlen(name), newSViv(type), 0);
   hv_store(_getters_map, name, strlen(name), newSViv(PTR2IV(getter)), 0);
   hv_store(_setters_map, name, strlen(name), newSViv(PTR2IV(setter)), 0);
@@ -35,6 +37,7 @@ static void _add_type(const char* name, TwType type,
 }
 
 int _disabled_lib_mode() {
+  dTHX;
   HV* env = get_hv("main::ENV", 0);
   const char* env_flag = "ANTTWEAKBAR_DISABLE_LIB";
   int marker = hv_exists(env, env_flag, strlen(env_flag));
@@ -42,21 +45,24 @@ int _disabled_lib_mode() {
 }
 
 void init(TwGraphAPI graphic_api) {
+  dTHX;
   int result = TwInit(TW_OPENGL, NULL);
   if(!result)
-    Perl_croak("Initialization error: %s", TwGetLastError());
+    Perl_croak(aTHX_ "Initialization error: %s", TwGetLastError());
 }
 
 void terminate() {
+  dTHX;
   int result = TwTerminate();
   if(!result)
-    Perl_croak("Termination error: %s", TwGetLastError());
+    Perl_croak( aTHX_ "Termination error: %s", TwGetLastError());
 }
 
 void window_size(int width, int height) {
+  dTHX;
   int result = TwWindowSize(width, height);
   if(!result)
-    Perl_croak("Set window size error: %s", TwGetLastError());
+    Perl_croak(aTHX_ "Set window size error: %s", TwGetLastError());
 }
 
 TwBar* _create(const char *name) {
@@ -65,19 +71,22 @@ TwBar* _create(const char *name) {
 }
 
 void _destroy(TwBar* bar) {
+  dTHX;
   if(_disabled_lib_mode()) return;
   int result = TwDeleteBar(bar);
   if(!result)
-    Perl_croak("AntTweakBar deletion error: %s", TwGetLastError());
+    Perl_croak(aTHX_ "AntTweakBar deletion error: %s", TwGetLastError());
 }
 
 void draw() {
+  dTHX;
   int result = TwDraw();
   if(!result)
-    Perl_croak("AntTweakBar drawing error: %s", TwGetLastError());
+    Perl_croak(aTHX_ "AntTweakBar drawing error: %s", TwGetLastError());
 }
 
 void _button_callback_bridge(void *data) {
+  dTHX;
   dSP;
   SV* callback = (SV*) data;
   PUSHMARK(SP);
@@ -85,6 +94,7 @@ void _button_callback_bridge(void *data) {
 }
 
 void _add_button(TwBar* bar, const char *name, SV* callback, const char *definition) {
+  dTHX;
   SvGETMAGIC(callback);
   if(!SvROK(callback)
      || (SvTYPE(SvRV(callback)) != SVt_PVCV))
@@ -94,16 +104,17 @@ void _add_button(TwBar* bar, const char *name, SV* callback, const char *definit
   if(!_btn_callback_mapping) _btn_callback_mapping = newHV();
   SV* callback_copy = newSVsv(callback);
 
-  int result = TwAddButton(bar, name, _button_callback_bridge, (void*) callback_copy, definition);
+  int result = TwAddButton(bar, name, (TwButtonCallback)_button_callback_bridge, (void*) callback_copy, definition);
   if(!result)
-    Perl_croak("Button addition error: %s", TwGetLastError());
+    Perl_croak(aTHX_ "Button addition error: %s", TwGetLastError());
   hv_store(_btn_callback_mapping, (char*)callback_copy, sizeof(callback_copy), callback_copy, 0);
 }
 
 void _add_separator(TwBar* bar, const char *name, const char *definition) {
+  dTHX;
   int result = TwAddSeparator(bar, name, definition);
   if(!result)
-    Perl_croak("Separator addition error: %s", TwGetLastError());
+    Perl_croak(aTHX_ "Separator addition error: %s", TwGetLastError());
 }
 
 /* returns 1 if it has been handled by AntTweekBar */
@@ -130,7 +141,8 @@ int eventSDL(SDL_Event* event){
   return TwEventSDL(event, SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
 }
 
-int _modifiers_callback_bridge(){
+int TW_CALL _modifiers_callback_bridge(void){
+  dTHX;
   if(!_modifiers_callback){
     croak("internal error: no _modifiers_callback\n");
     return -1;
@@ -141,6 +153,7 @@ int _modifiers_callback_bridge(){
 }
 
 int GLUTModifiersFunc(SV* callback){
+  dTHX;
   SvGETMAGIC(callback);
   if(!SvROK(callback)
      || (SvTYPE(SvRV(callback)) != SVt_PVCV))
@@ -151,18 +164,19 @@ int GLUTModifiersFunc(SV* callback){
      SvREFCNT_dec(_modifiers_callback);
   }
   _modifiers_callback = newSVsv(callback);
-  return TwGLUTModifiersFunc(_modifiers_callback_bridge);
+  return TwGLUTModifiersFunc(&_modifiers_callback_bridge);
 }
 
 void _add_variable(TwBar* bar, const char* mode, const char* name,
 		   const char* type, SV* value_ref,
 		   SV* cb_read, SV* cb_write, const char* definition) {
+  dTHX;		   
   SV** sv_type_ref = hv_fetch(_type_map, type, strlen(type), 0);
   TwType tw_type;
   if(sv_type_ref) {
     tw_type = (TwType) SvIV(*sv_type_ref);
   } else {
-    Perl_croak("Undefined var type: %s", type);
+    Perl_croak(aTHX_ "Undefined var type: %s", type);
   }
 
   SV** getter_ref;
@@ -202,11 +216,12 @@ void _add_variable(TwBar* bar, const char* mode, const char* name,
   if(!result){
     hv_delete(_sv_copy_names, name, strlen(name), 0);
     hv_delete(_cb_marker_map, name, strlen(name), 0);
-    Perl_croak("Variable addition error: %s", TwGetLastError());
+    Perl_croak(aTHX_ "Variable addition error: %s", TwGetLastError());
   }
 }
 
 void _remove_variable(TwBar* bar, const char* name) {
+  dTHX;
   SV* cb_or_value =
 	  hv_exists(_sv_copy_names, name, strlen(name))
 	  ? hv_delete(_sv_copy_names, name, strlen(name), 0)
@@ -214,15 +229,16 @@ void _remove_variable(TwBar* bar, const char* name) {
 	  ? hv_delete(_cb_marker_map, name, strlen(name), 0)
 	  : NULL;
   if(!cb_or_value) {
-    Perl_croak("No variable with name '%s'", name);
+    Perl_croak(aTHX_ "No variable with name '%s'", name);
   }
   if(_disabled_lib_mode()) return;
   int result = TwRemoveVar(bar, name);
   if(!result)
-    Perl_croak("Removing variable %s error: %s", name, TwGetLastError());
+    Perl_croak(aTHX_ "Removing variable %s error: %s", name, TwGetLastError());
 }
 
 TwType _register_enum(const char* name, SV* hash_ref){
+  dTHX;
   if(!SvOK(hash_ref) || !SvROK(hash_ref)){
     Perl_croak(aTHX_ "Hashref cannot be undefined");
   }
@@ -254,35 +270,39 @@ TwType _register_enum(const char* name, SV* hash_ref){
   TwType new_type = !_disabled_lib_mode()
     ? TwDefineEnum(name, enum_values, total_keys)
     : TW_TYPE_UNDEF;
-  _add_type(name, new_type, _int_getter, _int_setter, _int_getter_cb, _int_setter_cb);
+  _add_type(name, new_type, &_int_getter, &_int_setter, &_int_getter_cb, &_int_setter_cb);
   free(enum_values);
   return new_type;
 }
 
 void _refresh(TwBar* bar){
+  dTHX;
   int result = TwRefreshBar(bar);
   if(!result)
-    Perl_croak("Refreshing error: %s", TwGetLastError());
+    Perl_croak(aTHX_ "Refreshing error: %s", TwGetLastError());
 }
 
 void _set_bar_parameter(TwBar* bar, const char* param_name, const char* param_value) {
+  dTHX;
   int result = TwSetParam(bar, NULL, param_name, TW_PARAM_CSTRING, 1, param_value);
   if(!result)
-    Perl_croak("Error applying value '%s' to parameter %s : %s",
+    Perl_croak(aTHX_ "Error applying value '%s' to parameter %s : %s",
 	       param_value, param_name, TwGetLastError());
 }
 
 /* CALLBACKS */
 /* int/bool callbacks */
 
-void _int_getter(void* value, void* data){
+void TW_CALL _int_getter(void* value, void* data){
+  dTHX;
   SV* sv = SvRV((SV*) data);
   SvGETMAGIC(sv);
   int iv = SvOK(sv) ? SvIV(sv) : 0;
   *(int*)value = iv;
 }
 
-void _int_getter_cb(void* value, void* data){
+void TW_CALL _int_getter_cb(void* value, void* data){
+  dTHX;
   SV** cb = hv_fetch(_cb_read_map, (char*) data, sizeof(SV*), 0);
   dSP;
   PUSHMARK(SP);
@@ -294,13 +314,15 @@ void _int_getter_cb(void* value, void* data){
   *(int*)value = SvOK(sv) ? SvIV(sv) : 0;
 }
 
-void _int_setter(const void* value, void* data){
+void TW_CALL _int_setter(const void* value, void* data){
+  dTHX;
   SV* sv = SvRV((SV*) data);
   sv_setiv(sv, *(int*)value );
   SvSETMAGIC(sv);
 }
 
-void _int_setter_cb(const void* value, void* data){
+void TW_CALL _int_setter_cb(const void* value, void* data){
+  dTHX;
   SV** cb = hv_fetch(_cb_write_map, (char*) data, sizeof(SV*), 0);
   dSP;
   ENTER;
@@ -315,20 +337,23 @@ void _int_setter_cb(const void* value, void* data){
 
 /* number(double) callbacks */
 
-void _number_getter(void* value, void* data){
+void TW_CALL _number_getter(void* value, void* data){
+  dTHX;
   SV* sv = SvRV((SV*) data);
   SvGETMAGIC(sv);
   double dv = SvOK(sv) ? SvNV(sv) : 0.0;
   *(double*)value = dv;
 }
 
-void _number_setter(const void* value, void* data){
+void TW_CALL _number_setter(const void* value, void* data){
+  dTHX;
   SV* sv = SvRV((SV*) data);
   sv_setnv(sv, *(double*)value );
   SvSETMAGIC(sv);
 }
 
-void _number_getter_cb(void* value, void* data){
+void TW_CALL _number_getter_cb(void* value, void* data){
+  dTHX;
   SV** cb = hv_fetch(_cb_read_map, (char*) data, sizeof(SV*), 0);
   dSP;
   PUSHMARK(SP);
@@ -340,7 +365,8 @@ void _number_getter_cb(void* value, void* data){
   *(double*)value = SvOK(sv) ? SvNV(sv) : 0.0;
 }
 
-void _number_setter_cb(const void* value, void* data){
+void TW_CALL _number_setter_cb(const void* value, void* data){
+  dTHX;
   SV** cb = hv_fetch(_cb_write_map, (char*) data, sizeof(SV*), 0);
   dSP;
   ENTER;
@@ -355,14 +381,16 @@ void _number_setter_cb(const void* value, void* data){
 
 /* string callbacks */
 
-void _string_getter(void* value, void* data){
+void TW_CALL _string_getter(void* value, void* data){
+  dTHX;
   SV* sv = SvRV((SV*) data);
   SvGETMAGIC(sv);
   const char* string = SvOK(sv) ? SvPV_nolen(sv) : "";
   *(const char**)value = string;
 }
 
-void _string_getter_cb(void* value, void* data){
+void TW_CALL _string_getter_cb(void* value, void* data){
+  dTHX;
   SV** cb = hv_fetch(_cb_read_map, (char*) data, sizeof(SV*), 0);
   dSP;
   PUSHMARK(SP);
@@ -377,7 +405,8 @@ void _string_getter_cb(void* value, void* data){
   *(const char**)value = SvPV_nolen(sv_string);
 }
 
-void _string_setter(const void* value, void* data){
+void TW_CALL _string_setter(const void* value, void* data){
+  dTHX;
   SV* sv = SvRV((SV*) data);
   const char* string = *(const char**)value;
   printf("set string: %s\n", string);
@@ -386,7 +415,8 @@ void _string_setter(const void* value, void* data){
   SvSETMAGIC(sv);
 }
 
-void _string_setter_cb(const void* value, void* data){
+void TW_CALL _string_setter_cb(const void* value, void* data){
+  dTHX;
   SV** cb = hv_fetch(_cb_write_map, (char*) data, sizeof(SV*), 0);
   dSP;
   ENTER;
@@ -402,7 +432,8 @@ void _string_setter_cb(const void* value, void* data){
 /* double/float array callback generators */
 
 #define DOUBLE_CALLBACK_GETTER(NAME, NUMBER, TYPE)	 \
-void NAME(void* value, void* data) { \
+void TW_CALL NAME(void* value, void* data) { \
+  dTHX; \
   SV* sv = SvRV((SV*) data); \
   if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){ \
     croak("reference does not point to array any more\n"); \
@@ -422,14 +453,18 @@ void NAME(void* value, void* data) { \
 };
 
 #define DOUBLE_CALLBACK_GETTER_CB(NAME, NUMBER, TYPE) \
-void NAME(void* value, void* data) { \
+void TW_CALL NAME(void* value, void* data) { \
+  dTHX;\
   SV** cb = hv_fetch(_cb_read_map, (char*) data, sizeof(SV*), 0); \
   dSP; \
   PUSHMARK(SP); \
   int count = call_sv(*cb, G_NOARGS|G_SCALAR); \
   SPAGAIN; \
-  if (count != 1) \
-    Perl_croak("Expected 1 arg to be returned from %s \n", #NAME); \
+  if (count != 1) {\
+	char buf[256] = {0}; \
+	sprintf(buf, "Expected 1 arg to be returned from %s \n", #NAME); \
+	croak(buf); \
+  } \
   SV* sv = POPs; \
   if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){ \
     croak("reference does not point to array any more\n"); \
@@ -449,7 +484,8 @@ void NAME(void* value, void* data) { \
 };
 
 #define DOUBLE_CALLBACK_SETTER(NAME, NUMBER, TYPE)	 \
-void NAME(const void* value, void* data) { \
+void TW_CALL NAME(const void* value, void* data) { \
+  dTHX;\
   SV* sv = SvRV((SV*) data); \
   if(!(SvTYPE(SvRV(sv)) == SVt_PVAV)){ \
     croak("reference does not point to array any more\n"); \
@@ -471,7 +507,8 @@ void NAME(const void* value, void* data) { \
 };
 
 #define DOUBLE_CALLBACK_SETTER_CB(NAME, NUMBER, TYPE)	 \
-void NAME(const void* value, void* data) { \
+void TW_CALL NAME(const void* value, void* data) { \
+  dTHX;\
   SV** cb = hv_fetch(_cb_write_map, (char*) data, sizeof(SV*), 0); \
   dSP; \
   ENTER; \
