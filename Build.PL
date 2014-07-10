@@ -16,11 +16,6 @@ my $atb_libs = Alien::AntTweakBar->config('libs');
 my $sdl_inc = Alien::SDL->config('cflags');
 my $sdl_libs = Alien::SDL->config('libs');
 
-my $all_inc = "$atb_inc $sdl_inc -DTW_STATIC";
-my $all_libs = "$atb_libs $sdl_libs -l$opengl_lib";
-
-print "using libs: $all_libs\n";
-
 my $build = Module::Build::WithXSpp->new(
     module_name        => 'AntTweakBar',
     dist_version_from  => 'lib/AntTweakBar.pm',
@@ -46,8 +41,8 @@ my $build = Module::Build::WithXSpp->new(
         'Test::More'     => 0,
         'Test::Warnings' => 0,
     },
-    extra_compiler_flags => $all_inc,
-    extra_linker_flags   => $all_libs,
+    extra_compiler_flags => [$atb_inc, $sdl_inc, "-DTW_STATIC"],
+    extra_linker_flags   => ['-x', '$(CXX)', $atb_libs, $sdl_libs, "-l$opengl_lib"],
     c_source             => 'src',
     needs_compiler       => 1,
     add_to_cleanup     => [ 'Alien-AntTweakBar-*', 'build_done' ],

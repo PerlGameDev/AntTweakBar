@@ -170,7 +170,7 @@ int GLUTModifiersFunc(SV* callback){
 void _add_variable(TwBar* bar, const char* mode, const char* name,
 		   const char* type, SV* value_ref,
 		   SV* cb_read, SV* cb_write, const char* definition) {
-  dTHX;		   
+  dTHX;
   SV** sv_type_ref = hv_fetch(_type_map, type, strlen(type), 0);
   TwType tw_type;
   if(sv_type_ref) {
