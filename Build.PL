@@ -42,7 +42,7 @@ my $build = Module::Build::WithXSpp->new(
         'Test::Warnings' => 0,
     },
     extra_compiler_flags => [$atb_inc, $sdl_inc, "-DTW_STATIC"],
-    extra_linker_flags   => ['-x', '$(CXX)', $atb_libs, $sdl_libs, "-l$opengl_lib"],
+    extra_linker_flags   => ['-x', 'c++', $atb_libs, $sdl_libs, "-l$opengl_lib"],
     c_source             => 'src',
     needs_compiler       => 1,
     add_to_cleanup     => [ 'Alien-AntTweakBar-*', 'build_done' ],

@@ -549,10 +549,7 @@ DOUBLE_CALLBACK_GETTER_CB(_quat4d_getter_cb,  4, double);
 DOUBLE_CALLBACK_SETTER   (_quat4d_setter,     4, double);
 DOUBLE_CALLBACK_SETTER_CB(_quat4d_setter_cb,  4, double);
 
-MODULE = AntTweakBar		PACKAGE = AntTweakBar
-
-BOOT:
-{
+void _bootstap(){
   HV *stash = gv_stashpv("AntTweakBar", TRUE);
   CONSTANT(TW_OPENGL);
   CONSTANT(TW_OPENGL_CORE);
@@ -578,7 +575,12 @@ BOOT:
   _add_type("color4f", TW_TYPE_COLOR4F, _color4f_getter, _color4f_setter, _color4f_getter_cb, _color4f_setter_cb);
   _add_type("direction", TW_TYPE_DIR3D, _dir3d_getter, _dir3d_setter, _dir3d_getter_cb, _dir3d_setter_cb);
   _add_type("quaternion", TW_TYPE_QUAT4D, _quat4d_getter, _quat4d_setter, _quat4d_getter_cb, _quat4d_setter_cb);
-};
+}
+
+MODULE = AntTweakBar		PACKAGE = AntTweakBar
+
+BOOT:
+_bootstap();
 
 void
 init(graphic_api)
