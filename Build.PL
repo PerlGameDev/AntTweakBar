@@ -16,8 +16,10 @@ my $atb_libs = Alien::AntTweakBar->config('libs');
 my $sdl_inc = Alien::SDL->config('cflags');
 my $sdl_libs = Alien::SDL->config('libs');
 
-my $all_libs = [$atb_libs, $sdl_libs, "-l$opengl_lib", 
-	( $^O ne 'MSWin32' ? ('-x', 'c++') : () )];
+my $all_libs = [
+    ( $^O ne 'MSWin32' ? ('-x', 'c++') : () ),
+    $atb_libs, $sdl_libs, "-l$opengl_lib",
+];
 
 my $build = Module::Build::WithXSpp->new(
     module_name        => 'AntTweakBar',
