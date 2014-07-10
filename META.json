@@ -1,0 +1,72 @@
+{
+   "abstract" : "Perl extension for blah blah blah",
+   "author" : [
+      "DMOL, dmol@cpan.org"
+   ],
+   "dynamic_config" : 1,
+   "generated_by" : "Module::Build version 0.4205",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "AntTweakBar",
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "ExtUtils::CBuilder" : "0",
+            "ExtUtils::XSpp" : "0.18"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "Alien::AntTweakBar" : "0.02_06",
+            "Alien::SDL" : "1.444",
+            "Devel::CheckLib" : "1.01",
+            "ExtUtils::CppGuess" : "0.07",
+            "Module::Build" : "0.42",
+            "Module::Build::WithXSpp" : "0.14",
+            "perl" : "5.008"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Alien::AntTweakBar" : "0.02_06",
+            "Alien::SDL" : "1.444",
+            "Carp" : "0",
+            "perl" : "5.008"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::Fatal" : "0",
+            "Test::More" : "0",
+            "Test::Warnings" : "0"
+         }
+      }
+   },
+   "provides" : {
+      "AntTweakBar" : {
+         "file" : "lib/AntTweakBar.pm",
+         "version" : "0.01_01"
+      },
+      "AntTweakBar::Type" : {
+         "file" : "lib/AntTweakBar/Type.pm"
+      }
+   },
+   "release_status" : "testing",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/basiliscos/p5-anttweakbar/issues"
+      },
+      "license" : [
+         "http://dev.perl.org/licenses/"
+      ],
+      "repository" : {
+         "url" : "https://github.com/basiliscos/p5-anttweakbar"
+      }
+   },
+   "version" : "0.01_01"
+}
