@@ -550,6 +550,7 @@ DOUBLE_CALLBACK_SETTER   (_quat4d_setter,     4, double);
 DOUBLE_CALLBACK_SETTER_CB(_quat4d_setter_cb,  4, double);
 
 void _bootstap(){
+  dTHX;
   HV *stash = gv_stashpv("AntTweakBar", TRUE);
   CONSTANT(TW_OPENGL);
   CONSTANT(TW_OPENGL_CORE);
@@ -580,7 +581,7 @@ void _bootstap(){
 MODULE = AntTweakBar		PACKAGE = AntTweakBar
 
 BOOT:
-_bootstap();
+  _bootstap();
 
 void
 init(graphic_api)
