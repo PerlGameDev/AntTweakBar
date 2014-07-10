@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Module::Build::WithXSpp;
+use Module::Build;
 use Devel::CheckLib;
 
 use Alien::AntTweakBar;
@@ -21,7 +21,7 @@ my $all_libs = [
     $atb_libs, $sdl_libs, "-l$opengl_lib", '-lstdc++',
 ];
 
-my $build = Module::Build::WithXSpp->new(
+my $build = Module::Build->new(
     module_name        => 'AntTweakBar',
     dist_version_from  => 'lib/AntTweakBar.pm',
     dist_author        => 'DMOL, dmol@cpan.org',
@@ -30,7 +30,6 @@ my $build = Module::Build::WithXSpp->new(
     configure_requires => {
         'perl'                    => '5.008',
         'Module::Build'           => '0.42',
-        'Module::Build::WithXSpp' => '0.14',
         'Alien::AntTweakBar'      => '0.02_06',
         'Alien::SDL'              => '1.444',
         'Devel::CheckLib'         => '1.01',
