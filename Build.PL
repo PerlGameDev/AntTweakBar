@@ -18,7 +18,7 @@ my $sdl_libs = Alien::SDL->config('libs');
 
 my $all_libs = [
     ( $^O ne 'MSWin32' ? ('-x', 'c++') : () ),
-    $atb_libs, $sdl_libs, "-l$opengl_lib",
+    $atb_libs, $sdl_libs, "-l$opengl_lib", '-lstdc++',
 ];
 
 my $build = Module::Build::WithXSpp->new(
