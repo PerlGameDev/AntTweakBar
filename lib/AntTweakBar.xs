@@ -581,7 +581,7 @@ void _bootstap(){
 MODULE = AntTweakBar		PACKAGE = AntTweakBar
 
 BOOT:
-  _bootstap();
+_bootstap();
 
 void
 init(graphic_api)
