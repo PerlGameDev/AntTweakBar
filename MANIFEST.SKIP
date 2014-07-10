@@ -8,3 +8,6 @@ Makefile
 MANIFEST.bak
 MANIFEST.SKIP
 ^MYMETA\.
+_build
+buildtmp
+^Build$

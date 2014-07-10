@@ -1,4 +1,3 @@
-#define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -54,7 +53,7 @@ void terminate() {
     Perl_croak("Termination error: %s", TwGetLastError());
 }
 
-void window_size(width, height) {
+void window_size(int width, int height) {
   int result = TwWindowSize(width, height);
   if(!result)
     Perl_croak("Set window size error: %s", TwGetLastError());
@@ -159,11 +158,10 @@ void _add_variable(TwBar* bar, const char* mode, const char* name,
 		   const char* type, SV* value_ref,
 		   SV* cb_read, SV* cb_write, const char* definition) {
   SV** sv_type_ref = hv_fetch(_type_map, type, strlen(type), 0);
-  TwType tw_type = 0;
+  TwType tw_type;
   if(sv_type_ref) {
     tw_type = (TwType) SvIV(*sv_type_ref);
-  }
-  if(!sv_type_ref) {
+  } else {
     Perl_croak("Undefined var type: %s", type);
   }
 
@@ -255,7 +253,7 @@ TwType _register_enum(const char* name, SV* hash_ref){
   }
   TwType new_type = !_disabled_lib_mode()
     ? TwDefineEnum(name, enum_values, total_keys)
-    : 0;
+    : TW_TYPE_UNDEF;
   _add_type(name, new_type, _int_getter, _int_setter, _int_getter_cb, _int_setter_cb);
   free(enum_values);
   return new_type;

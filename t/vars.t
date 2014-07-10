@@ -6,6 +6,7 @@ use warnings;
 use Test::Fatal;
 use Test::More;
 use Test::Warnings;
+
 use AntTweakBar qw/:all/;
 use AntTweakBar::Type;
 

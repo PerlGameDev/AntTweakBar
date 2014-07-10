@@ -18,3 +18,4 @@ nytprof.out
 *.bs
 .prove
 AntTweakBar.c
+buildtmp
