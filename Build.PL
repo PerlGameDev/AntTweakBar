@@ -16,7 +16,7 @@ my $atb_libs = Alien::AntTweakBar->config('libs');
 my $sdl_inc = Alien::SDL->config('cflags');
 my $sdl_libs = Alien::SDL->config('libs');
 
-my $all_inc = "$atb_inc $sdl_inc";
+my $all_inc = "$atb_inc $sdl_inc -DTW_STATIC";
 my $all_libs = "$atb_libs $sdl_libs -l$opengl_lib";
 
 print "using libs: $all_libs\n";

@@ -578,7 +578,7 @@ BOOT:
   _add_type("color4f", TW_TYPE_COLOR4F, _color4f_getter, _color4f_setter, _color4f_getter_cb, _color4f_setter_cb);
   _add_type("direction", TW_TYPE_DIR3D, _dir3d_getter, _dir3d_setter, _dir3d_getter_cb, _dir3d_setter_cb);
   _add_type("quaternion", TW_TYPE_QUAT4D, _quat4d_getter, _quat4d_setter, _quat4d_getter_cb, _quat4d_setter_cb);
-}
+};
 
 void
 init(graphic_api)
