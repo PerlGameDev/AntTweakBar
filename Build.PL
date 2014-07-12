@@ -40,7 +40,7 @@ my $build = Module::Build->new(
     requires           => {
       'perl'               => 5.008,
       'Carp'               => 0,
-      'Alien::AntTweakBar' => '0.02_06',
+      'Alien::AntTweakBar' => '0.02',
       'Alien::SDL'         => '1.444',
     },
     test_requires => {

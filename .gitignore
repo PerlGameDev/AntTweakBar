@@ -18,3 +18,5 @@ nytprof.out
 .prove
 AntTweakBar.c
 buildtmp
+.travis.yml
+AntTweakBar-.*

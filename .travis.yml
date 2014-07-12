@@ -4,7 +4,6 @@ before_install:
  - apt-cache search libdbus
  - sudo apt-get install libdbus-1-3
  - sudo apt-get install libsdl1.2-dev
- - cpanm -v D/DM/DMOL/Alien-AntTweakBar-0.02_07.tar.gz
 
 install: cpanm -v --installdeps --notest .
 

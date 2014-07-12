@@ -16,8 +16,7 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "ExtUtils::CBuilder" : "0",
-            "ExtUtils::XSpp" : "0.18"
+            "ExtUtils::CBuilder" : "0"
          }
       },
       "configure" : {
@@ -25,15 +24,13 @@
             "Alien::AntTweakBar" : "0.02_06",
             "Alien::SDL" : "1.444",
             "Devel::CheckLib" : "1.01",
-            "ExtUtils::CppGuess" : "0.07",
             "Module::Build" : "0.42",
-            "Module::Build::WithXSpp" : "0.14",
             "perl" : "5.008"
          }
       },
       "runtime" : {
          "requires" : {
-            "Alien::AntTweakBar" : "0.02_06",
+            "Alien::AntTweakBar" : "0.02",
             "Alien::SDL" : "1.444",
             "Carp" : "0",
             "perl" : "5.008"

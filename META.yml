@@ -4,7 +4,6 @@ author:
   - 'DMOL, dmol@cpan.org'
 build_requires:
   ExtUtils::CBuilder: '0'
-  ExtUtils::XSpp: '0.18'
   Test::Fatal: '0'
   Test::More: '0'
   Test::Warnings: '0'
@@ -12,9 +11,7 @@ configure_requires:
   Alien::AntTweakBar: 0.02_06
   Alien::SDL: '1.444'
   Devel::CheckLib: '1.01'
-  ExtUtils::CppGuess: '0.07'
   Module::Build: '0.42'
-  Module::Build::WithXSpp: '0.14'
   perl: '5.008'
 dynamic_config: 1
 generated_by: 'Module::Build version 0.4205, CPAN::Meta::Converter version 2.141520'
@@ -30,7 +27,7 @@ provides:
   AntTweakBar::Type:
     file: lib/AntTweakBar/Type.pm
 requires:
-  Alien::AntTweakBar: 0.02_06
+  Alien::AntTweakBar: '0.02'
   Alien::SDL: '1.444'
   Carp: '0'
   perl: '5.008'
