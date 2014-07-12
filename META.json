@@ -21,7 +21,7 @@
       },
       "configure" : {
          "requires" : {
-            "Alien::AntTweakBar" : "0.02_06",
+            "Alien::AntTweakBar" : "0.02",
             "Alien::SDL" : "1.444",
             "Devel::CheckLib" : "1.01",
             "Module::Build" : "0.42",

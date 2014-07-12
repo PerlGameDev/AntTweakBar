@@ -33,7 +33,7 @@ my $build = Module::Build->new(
     configure_requires => {
         'perl'                    => '5.008',
         'Module::Build'           => '0.42',
-        'Alien::AntTweakBar'      => '0.02_06',
+        'Alien::AntTweakBar'      => '0.02',
         'Alien::SDL'              => '1.444',
         'Devel::CheckLib'         => '1.01',
     },
