@@ -1,3 +1,9 @@
+#!/usr/bin/env perl
+
+# This is almost one-to-one perl's rewrite of C-original
+# http://anttweakbar.sourceforge.net/doc/tools:anttweakbar:examples#twsimpleglut
+# http://sourceforge.net/p/anttweakbar/code/ci/master/tree/examples/TwSimpleGLUT.c
+
 use 5.12.0;
 use strict;
 use warnings;
