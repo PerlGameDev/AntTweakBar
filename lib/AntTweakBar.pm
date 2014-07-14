@@ -122,6 +122,13 @@ sub set_bar_params {
     }
 }
 
+sub set_variable_params {
+    my ($self, $variable, %params) = @_;
+    while (my ($k, $v) = each(%params)) {
+        _set_variable_parameter($self->{_bar_ptr}, $variable, $k, $v);
+    }
+}
+
 # Preloaded methods go here.
 
 1;

@@ -290,6 +290,15 @@ void _set_bar_parameter(TwBar* bar, const char* param_name, const char* param_va
 	       param_value, param_name, TwGetLastError());
 }
 
+void _set_variable_parameter(TwBar* bar, const char* variable, 
+			     const char* param_name, const char* param_value) {
+  dTHX;
+  int result = TwSetParam(bar, variable, param_name, TW_PARAM_CSTRING, 1, param_value);
+  if(!result)
+    Perl_croak(aTHX_ "Error applying value '%s' of parameter %s to variable %s : %s",
+	       param_value, param_name, variable, TwGetLastError());
+}
+
 /* CALLBACKS */
 /* int/bool callbacks */
 
@@ -699,3 +708,11 @@ _set_bar_parameter(bar, param_name, param_value)
   const char* param_name
   const char* param_value
   PROTOTYPE: $$$
+
+void
+_set_variable_parameter(bar, variable, param_name, param_value)
+  TwBar* bar
+  const char* variable
+  const char* param_name
+  const char* param_value
+  PROTOTYPE: $$$$

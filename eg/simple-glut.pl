@@ -29,7 +29,6 @@ sub reshape {
     gluLookAt(0,0,5, 0,0,0, 0,1,0);
     glTranslatef(0, 0.6, -1);
 
-    say "window size: ${width} x ${height}";
     AntTweakBar::window_size($width, $height);
 }
 
@@ -191,18 +190,6 @@ sub display {
     glutPostRedisplay;
 }
 
-# callbacks
-sub toggle_auto_rotation {
-    $auto_rotation = shift;
-    if ($auto_rotation) {
-        $rotate_time = [ gettimeofday ];
-        @$rotate_start = @$rotation;
-        say "unimplemented: set var params: ObjRotation readonly";
-    }
-    say "unimplemented: set var params: ObjRotation readwrite";
-};
-
-
 my $bar = AntTweakBar->new(
     "TweakBar & Perl",
     size  => '200 400',
@@ -227,7 +214,15 @@ $bar->add_variable(
     name       => "AutoRotate",
     type       => 'bool',
     cb_read    => sub { $auto_rotation },
-    cb_write   => \&toggle_auto_rotation,
+    cb_write   => sub {
+        $auto_rotation = shift;
+        if ($auto_rotation) {
+            $rotate_time = [ gettimeofday ];
+            @$rotate_start = @$rotation;
+            $bar->set_variable_params('ObjRotation', readonly => 'true');
+        }
+        $bar->set_variable_params('ObjRotation', readonly => 'false');
+    },
     definition => " label='Auto-rotate' key=space help='Toggle auto-rotate mode.' ",
 );
 $bar->add_variable(
