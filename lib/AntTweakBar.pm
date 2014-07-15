@@ -120,6 +120,8 @@ following:
 
 =back
 
+See working examples in the C<eg> directoctory within the distribution.
+
 =head2 EXPORT
 
 Constants only
