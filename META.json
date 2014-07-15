@@ -1,10 +1,10 @@
 {
-   "abstract" : "Perl extension for blah blah blah",
+   "abstract" : "Perl bindings for AntTweakBar",
    "author" : [
       "DMOL, dmol@cpan.org"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4205",
+   "generated_by" : "Module::Build version 0.4206",
    "license" : [
       "perl_5"
    ],
@@ -47,7 +47,7 @@
    "provides" : {
       "AntTweakBar" : {
          "file" : "lib/AntTweakBar.pm",
-         "version" : "0.01_02"
+         "version" : "0.01_03"
       },
       "AntTweakBar::Type" : {
          "file" : "lib/AntTweakBar/Type.pm"
@@ -65,5 +65,5 @@
          "url" : "https://github.com/basiliscos/p5-anttweakbar"
       }
    },
-   "version" : "0.01_02"
+   "version" : "0.01_03"
 }
