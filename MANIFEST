@@ -1,5 +1,6 @@
 Build.PL
 Changes
+eg/available-properties.pl
 eg/simple-glut.pl
 lib/AntTweakBar.pm
 lib/AntTweakBar.xs
