@@ -130,11 +130,16 @@ Constants only
 =head1 CONSTANTS
 
 The following constants let AntTweakBar know which graphic system do
-you use.
+you use, to know how to render itself
 
 =head2 TW_OPENGL
 
+Render using plain old OpenGL
+
 =head2 TW_OPENGL_CORE
+
+Render AntTweakBar using OpenGL core profile, which excludes deprecated
+OpenGL functions. See: L<https://en.wikipedia.org/wiki/OpenGL_4#OpenGL_3.2>
 
 =head2 TW_DIRECT3D9 (not implemented)
 
