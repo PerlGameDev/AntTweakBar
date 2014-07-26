@@ -47,7 +47,7 @@
    "provides" : {
       "AntTweakBar" : {
          "file" : "lib/AntTweakBar.pm",
-         "version" : "0.01"
+         "version" : "0.02"
       },
       "AntTweakBar::Type" : {
          "file" : "lib/AntTweakBar/Type.pm"
@@ -65,5 +65,5 @@
          "url" : "https://github.com/basiliscos/p5-anttweakbar"
       }
    },
-   "version" : "0.01"
+   "version" : "0.02"
 }
