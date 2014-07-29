@@ -115,7 +115,7 @@ following:
     mode       => 'rw',
     name       => "Enabled",
     type       => 'integer',
-    value      => \$enabled
+    value      => \$value
   );
 
 =back
