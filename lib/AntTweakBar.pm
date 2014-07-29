@@ -319,7 +319,7 @@ for the variable.
 =head3 type
 
 Defines the type of variable. Original types L<http://anttweakbar.sourceforge.net/doc/tools:anttweakbar:twtype>
-has been reduced to:
+were reduced to:
 
 =over
 
