@@ -193,6 +193,16 @@ sub DESTROY {
 }
 
 
+sub _as_definition_string {
+    my $d = shift;
+    return join(' ', map {
+        my $key = $_;
+        my $value = $d->{$key};
+        $value =~ s/'/\\'/g;
+        "$key='$value'";
+    } sort keys %$d);
+}
+
 =head2 add_button
 
   $bar->add_button(
@@ -201,10 +211,20 @@ sub DESTROY {
     definition => "label='Click me!'",    # optional
   );
 
+  $bar->add_button(
+    name       => 'my_btn',
+    cb         => sub { say "clicked!" },
+    definition => { # optional
+      label => 'Click me!'
+    }
+  );
+
+
 The definition parameters are the same as for variable. See
 L<http://anttweakbar.sourceforge.net/doc/tools:anttweakbar:varparamsyntax#parameters>.
 
 =cut
+
 
 sub add_button {
     my ($self, %args) = @_;
@@ -217,6 +237,8 @@ sub add_button {
         unless defined $name;
     croak "Button callback should be specified"
         if(!defined($cb) || ref($cb) ne 'CODE');
+    $definition = _as_definition_string($definition)
+        if ($definition && ref($definition) eq 'HASH');
 
     _add_button($self->{_bar_ptr}, $name, $cb, $definition);
 }
@@ -234,6 +256,8 @@ sub add_separator {
         unless defined $name;
 
     $definition //= "";
+    $definition = _as_definition_string($definition)
+        if ($definition && ref($definition) eq 'HASH');
 
     _add_separator($self->{_bar_ptr}, $name, $definition);
 }
@@ -248,6 +272,22 @@ sub add_separator {
     type       => 'number',
     value      => \$zoom,
     definition => " min=0.01 max=2.5 step=0.01 help='Bla-bla-bla.' ",
+  );
+
+  # the same, but with more perlish style in definition
+  $bar->add_variable(
+    mode       => 'rw',
+    name       => "Zoom",
+    type       => 'number',
+    value      => \$zoom,
+    definition => {
+        min     => "0.01",
+        max     => "2.5",
+        step    => "0.01",
+        keyIncr => 'z',
+        keyDecr => 'Z',
+        help    => 'Scale the object (1=original size).'
+    },
   );
 
   my $bool = undef;
@@ -327,7 +367,8 @@ If C<cb_write> is undefined, then the variable considered B<readonly>.
 
 =head3 definition
 
-An string that allows additiona tuning of variable.
+An string or hashref of values that allows additional tuning of
+variable in Anttweakbar.
 See L<http://anttweakbar.sourceforge.net/doc/tools:anttweakbar:varparamsyntax#parameters>
 for possible values.
 
@@ -356,6 +397,8 @@ sub add_variable {
     croak "value should be a reference"
         if ($value && !ref($value));
     $type = $type->name if(ref($type) eq 'AntTweakBar::Type');
+    $definition = _as_definition_string($definition)
+        if ($definition && ref($definition) eq 'HASH');
 
     _add_variable($self->{_bar_ptr}, $mode, $name, $type, $value,
                   $cb_read, $cb_write, $definition);

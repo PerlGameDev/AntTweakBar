@@ -1,9 +1,11 @@
 Revision history for Perl extension AntTweakBar.
+0.03  Tue Jul 29 22:38:22 FET 2014
+        - Allow pass definition for button/variable as hashref
 
-0.02  Sat Jul 26 23:45:00 2014
+0.02  Sat Jul 26 23:45:00 FET 2014
         - Improved documentation about exported constants (GH#1)
 
-0.01  Mon Jun 23 02:17:34 2014
+0.01  Mon Jun 23 02:17:34 FET 2014
 	- original version; created by h2xs 1.23 with options
 		-A -n AntTweakBar
 

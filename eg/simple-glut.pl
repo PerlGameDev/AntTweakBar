@@ -200,7 +200,14 @@ $bar->add_variable(
     name       => "Zoom",
     type       => 'number',
     value      => \$zoom,
-    definition => " min=0.01 max=2.5 step=0.01 keyIncr=z keyDecr=Z help='Scale the object (1=original size).' ",
+    definition => {
+        min     => "0.01",
+        max     => "2.5",
+        step    => "0.01",
+        keyIncr => 'z',
+        keyDecr => 'Z',
+        help    => 'Scale the object (1=original size).'
+    },
 );
 $bar->add_variable(
     mode       => 'rw',
