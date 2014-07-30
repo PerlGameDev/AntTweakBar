@@ -23,7 +23,7 @@ name: AntTweakBar
 provides:
   AntTweakBar:
     file: lib/AntTweakBar.pm
-    version: 0.03_01
+    version: '0.03'
   AntTweakBar::Type:
     file: lib/AntTweakBar/Type.pm
 requires:
@@ -32,7 +32,7 @@ requires:
   Carp: '0'
   perl: '5.008'
 resources:
-  bugtracker: https://github.com/basiliscos/p5-anttweakbar/issues
+  bugtracker: https://github.com/PerlGameDev/AntTweakBar/issues
   license: http://dev.perl.org/licenses/
-  repository: https://github.com/basiliscos/p5-anttweakbar
-version: 0.03_01
+  repository: https://github.com/PerlGameDev/AntTweakBar
+version: '0.03'
