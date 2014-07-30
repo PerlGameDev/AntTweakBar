@@ -55,8 +55,8 @@ my $build = Module::Build->new(
     add_to_cleanup     => [ 'Alien-AntTweakBar-*', 'build_done' ],
     meta_merge => {
         resources  => {
-            bugtracker => 'https://github.com/basiliscos/p5-anttweakbar/issues',
-            repository => 'https://github.com/basiliscos/p5-anttweakbar',
+            bugtracker => 'https://github.com/PerlGameDev/AntTweakBar/issues',
+            repository => 'https://github.com/PerlGameDev/AntTweakBar',
         }
     },
 
