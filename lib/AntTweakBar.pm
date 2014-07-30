@@ -31,7 +31,7 @@ our @EXPORT = qw(
 
 );
 
-our $VERSION = '0.03_01';
+our $VERSION = '0.03';
 
 =head1 NAME
 
