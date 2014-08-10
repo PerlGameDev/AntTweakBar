@@ -86,6 +86,9 @@ AntTweakBar - Perl bindings for AntTweakBar
 AntTweakBar (see L<http://anttweakbar.sourceforge.net/>) is nice tiny
 GUI library for OpenGL/SDL/DirectX applications.
 
+If you are in hurry to evaluate it then intall AntTweakBar and try
+examples from C<eg> directory within the distribution.
+
 To display AntTweakBar in your OpenGL/SDL application you should do the
 following:
 
