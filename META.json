@@ -47,7 +47,7 @@
    "provides" : {
       "AntTweakBar" : {
          "file" : "lib/AntTweakBar.pm",
-         "version" : "0.03"
+         "version" : "0.04"
       },
       "AntTweakBar::Type" : {
          "file" : "lib/AntTweakBar/Type.pm"
@@ -65,5 +65,5 @@
          "url" : "https://github.com/PerlGameDev/AntTweakBar"
       }
    },
-   "version" : "0.03"
+   "version" : "0.04"
 }
