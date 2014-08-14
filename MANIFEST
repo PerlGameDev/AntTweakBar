@@ -1,6 +1,8 @@
 Build.PL
 Changes
 eg/available-properties.pl
+eg/available-properties.png
+eg/simple-glut.gif
 eg/simple-glut.pl
 lib/AntTweakBar.pm
 lib/AntTweakBar.xs
