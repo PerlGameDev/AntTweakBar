@@ -9,12 +9,12 @@ build_requires:
   Test::Warnings: '0'
 configure_requires:
   Alien::AntTweakBar: '0.02'
-  Alien::SDL: '1.444'
+  Alien::SDL: '1.44'
   Devel::CheckLib: '1.01'
   Module::Build: '0.42'
   perl: '5.008'
 dynamic_config: 1
-generated_by: 'Module::Build version 0.4206, CPAN::Meta::Converter version 2.142060'
+generated_by: 'Module::Build version 0.4208, CPAN::Meta::Converter version 2.140640'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -23,7 +23,7 @@ name: AntTweakBar
 provides:
   AntTweakBar:
     file: lib/AntTweakBar.pm
-    version: 0.05_01
+    version: 0.05_02
   AntTweakBar::Type:
     file: lib/AntTweakBar/Type.pm
 requires:
@@ -35,4 +35,4 @@ resources:
   bugtracker: https://github.com/PerlGameDev/AntTweakBar/issues
   license: http://dev.perl.org/licenses/
   repository: https://github.com/PerlGameDev/AntTweakBar
-version: 0.05_01
+version: 0.05_02
