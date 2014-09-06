@@ -4,7 +4,7 @@
       "DMOL, dmol@cpan.org"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4208",
+   "generated_by" : "Module::Build version 0.421",
    "license" : [
       "perl_5"
    ],
@@ -47,13 +47,13 @@
    "provides" : {
       "AntTweakBar" : {
          "file" : "lib/AntTweakBar.pm",
-         "version" : "0.05_02"
+         "version" : "0.05"
       },
       "AntTweakBar::Type" : {
          "file" : "lib/AntTweakBar/Type.pm"
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/PerlGameDev/AntTweakBar/issues"
@@ -65,5 +65,5 @@
          "url" : "https://github.com/PerlGameDev/AntTweakBar"
       }
    },
-   "version" : "0.05_02"
+   "version" : "0.05"
 }

@@ -1,7 +1,10 @@
 Revision history for Perl extension AntTweakBar.
 
+0.05
         - Improved documentation (added mention of ready to use
                 examples)
+        - Added more nicely looking screenshots (thanks to davehorner)
+        - Allow to use a bit outdated Alien::SDL v1.44
 
 0.03  Tue Jul 29 22:38:22 FET 2014
         - Allow pass definition for button/variable as hashref
